@@ -23,7 +23,13 @@ const baseConfig = {
     ],
     unoptimized: true,
   },
-  allowedDevOrigins: ['*'],
+  allowedDevOrigins: [
+    '*.replit.dev',
+    '*.repl.co',
+    '*.kirk.replit.dev',
+    'localhost:5000',
+    '127.0.0.1:5000',
+  ],
 }
 
 module.exports = (phase) => {
