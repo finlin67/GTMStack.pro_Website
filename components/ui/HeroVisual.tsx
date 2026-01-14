@@ -3,17 +3,180 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Image from 'next/image'
 import { motion, useReducedMotion } from 'framer-motion'
+import type { HeroVisualVariant } from '@/lib/heroVisuals'
+
+function SignatureConstellation({ reduced }: { reduced: boolean }) {
+  const nodes = useMemo(() => {
+    const points: { x: number; y: number; size: number; delay: number }[] = []
+    const positions = [
+      { x: 180, y: 140 }, { x: 320, y: 180 }, { x: 480, y: 120 },
+      { x: 620, y: 200 }, { x: 780, y: 160 }, { x: 860, y: 280 },
+      { x: 720, y: 380 }, { x: 560, y: 340 }, { x: 400, y: 420 },
+      { x: 240, y: 360 }, { x: 140, y: 480 }, { x: 300, y: 540 },
+      { x: 460, y: 580 }, { x: 620, y: 520 }, { x: 780, y: 480 },
+      { x: 840, y: 600 }, { x: 680, y: 680 }, { x: 520, y: 720 },
+      { x: 360, y: 660 }, { x: 200, y: 620 },
+    ]
+    positions.forEach((pos, i) => {
+      points.push({
+        x: pos.x,
+        y: pos.y,
+        size: 3 + (i % 3) * 1.5,
+        delay: i * 0.15,
+      })
+    })
+    return points
+  }, [])
+
+  const connections = useMemo(() => {
+    const lines: { x1: number; y1: number; x2: number; y2: number; delay: number }[] = []
+    const pairs = [
+      [0, 1], [1, 2], [2, 3], [3, 4], [4, 5],
+      [5, 6], [6, 7], [7, 8], [8, 9], [9, 10],
+      [10, 11], [11, 12], [12, 13], [13, 14], [14, 15],
+      [15, 16], [16, 17], [17, 18], [18, 19], [19, 10],
+      [1, 7], [3, 6], [8, 12], [11, 18], [13, 16],
+      [0, 9], [2, 7], [4, 6], [14, 5],
+    ]
+    pairs.forEach(([a, b], i) => {
+      lines.push({
+        x1: nodes[a].x,
+        y1: nodes[a].y,
+        x2: nodes[b].x,
+        y2: nodes[b].y,
+        delay: i * 0.08,
+      })
+    })
+    return lines
+  }, [nodes])
+
+  const Path = reduced ? 'line' : motion.line
+  const Circle = reduced ? 'circle' : motion.circle
+
+  return (
+    <svg
+      className="absolute inset-0 w-full h-full"
+      viewBox="0 0 1000 800"
+      fill="none"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="constellationStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#6366f1" stopOpacity="0.4" />
+          <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#a855f7" stopOpacity="0.4" />
+        </linearGradient>
+        <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.8" />
+          <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {connections.map((line, i) => (
+        <Path
+          key={`line-${i}`}
+          x1={line.x1}
+          y1={line.y1}
+          x2={line.x2}
+          y2={line.y2}
+          stroke="url(#constellationStroke)"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          {...(!reduced && {
+            initial: { opacity: 0, pathLength: 0 },
+            animate: {
+              opacity: [0.15, 0.35, 0.15],
+              pathLength: 1,
+            },
+            transition: {
+              opacity: {
+                duration: 4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: line.delay,
+              },
+              pathLength: {
+                duration: 1.5,
+                ease: 'easeOut',
+                delay: line.delay,
+              },
+            },
+          })}
+          opacity={reduced ? 0.2 : undefined}
+        />
+      ))}
+
+      {nodes.map((node, i) => (
+        <g key={`node-${i}`}>
+          <circle
+            cx={node.x}
+            cy={node.y}
+            r={node.size * 3}
+            fill="url(#nodeGlow)"
+            opacity={reduced ? 0.15 : 0.2}
+          />
+          <Circle
+            cx={node.x}
+            cy={node.y}
+            r={node.size}
+            fill="#38bdf8"
+            {...(!reduced && {
+              initial: { opacity: 0.3, scale: 0.8 },
+              animate: {
+                opacity: [0.4, 0.8, 0.4],
+                scale: [0.9, 1.1, 0.9],
+              },
+              transition: {
+                duration: 3 + (i % 3),
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: node.delay,
+              },
+            })}
+            opacity={reduced ? 0.5 : undefined}
+          />
+        </g>
+      ))}
+
+      {!reduced && [0, 4, 9, 14, 18].map((idx) => (
+        <motion.circle
+          key={`pulse-${idx}`}
+          cx={nodes[idx].x}
+          cy={nodes[idx].y}
+          r={nodes[idx].size}
+          fill="none"
+          stroke="#38bdf8"
+          strokeWidth="1"
+          initial={{ opacity: 0, scale: 1 }}
+          animate={{
+            opacity: [0.6, 0],
+            scale: [1, 3],
+          }}
+          transition={{
+            duration: 2.5,
+            repeat: Infinity,
+            ease: 'easeOut',
+            delay: idx * 0.4,
+          }}
+        />
+      ))}
+    </svg>
+  )
+}
 
 interface HeroVisualProps {
   image?: string
   pathwaySvg?: string
   className?: string
+  variant?: HeroVisualVariant
 }
 
 export function HeroVisual({
   image,
   pathwaySvg,
   className,
+  variant,
 }: HeroVisualProps) {
   const [imageError, setImageError] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -81,6 +244,52 @@ export function HeroVisual({
           ease: 'easeOut',
         },
       }
+
+  // If variant is specified, render the variant-specific visual
+  if (variant === 'signatureConstellation') {
+    return (
+      <motion.div
+        className={`relative aspect-square rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-brand-900/30 to-slate-900/50 backdrop-blur-sm ${className || ''}`}
+        initial={motionConfig.initial}
+        animate={motionConfig.animate}
+        whileHover={motionConfig.whileHover}
+        transition={motionConfig.transition}
+      >
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-900/40 via-cool-900/30 to-cyan-900/35" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_45%,rgba(90,108,242,0.25),transparent_55%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_52%,rgba(139,92,246,0.18),transparent_55%)]" />
+        </div>
+
+        <div className="absolute inset-0 z-10">
+          <SignatureConstellation reduced={!!prefersReducedMotion} />
+        </div>
+
+        <div className="absolute inset-0 z-20 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 z-20 bg-gradient-to-br from-brand-500/10 via-transparent to-cyan-500/8" />
+
+        {!prefersReducedMotion && (
+          <motion.div
+            className="absolute inset-0 z-[25] pointer-events-none"
+            animate={{ x: ['-30%', '130%'] }}
+            transition={{
+              duration: shimmerDuration,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+            style={{
+              background: 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%)',
+              width: '60%',
+              height: '100%',
+            }}
+          />
+        )}
+
+        <div className="absolute inset-0 z-30 rounded-3xl border border-white/5 pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 z-30 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      </motion.div>
+    )
+  }
 
   // Always render the container (never return null) to keep the right tile visually present
   return (

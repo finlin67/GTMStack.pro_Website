@@ -111,6 +111,13 @@ export function HeroDark({
     if (visualObject.useAbstract) {
       const variant = size === 'large' ? 'topLevel' : 'detail'
       resolvedRightVisual = <HeroAbstract variant={variant} />
+    } else if (visualObject.variant) {
+      resolvedRightVisual = (
+        <HeroVisual
+          variant={visualObject.variant}
+          className={presetClassName}
+        />
+      )
     } else {
       resolvedRightVisual = (
         <HeroVisual

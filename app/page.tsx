@@ -64,7 +64,7 @@ export default function HomePage() {
             label: 'View Expertise',
             href: '/expertise',
           }}
-          rightVisual={{ image: '/images/heroes/homepage-hero.jpg' }}
+          rightVisual={{ variant: 'signatureConstellation' }}
       />
       </Reveal>
 

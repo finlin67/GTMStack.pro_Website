@@ -1,3 +1,5 @@
+export type HeroVisualVariant = 'signatureConstellation'
+
 export type HeroVisual = {
   image?: string
   video?: string
@@ -5,6 +7,7 @@ export type HeroVisual = {
   alt?: string
   motif?: 'topo' | 'signal' | 'pathway' | 'grid' | 'none'
   pathwaySvg?: string
+  variant?: HeroVisualVariant
 }
 
 export const HERO_VISUALS = {
