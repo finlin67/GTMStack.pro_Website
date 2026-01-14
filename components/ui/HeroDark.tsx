@@ -1,5 +1,7 @@
 'use client'
 
+const DEBUG_HERO_VARIANT = true
+
 import React from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -141,6 +143,12 @@ export function HeroDark({
         className
       )}
     >
+      {DEBUG_HERO_VARIANT && (
+        <div className="absolute top-4 left-4 z-50 px-3 py-1.5 text-xs font-mono bg-white/10 border border-white/15 rounded backdrop-blur-sm pointer-events-none">
+          <div className="text-white/70">{pathname}</div>
+          <div className="text-cyan-300">{resolvedBackgroundVariant}</div>
+        </div>
+      )}
       <HeroBackground variant={resolvedBackgroundVariant} />
 
       {/* Ambient gradient orbs with drift */}
