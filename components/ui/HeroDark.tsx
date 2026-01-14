@@ -15,8 +15,17 @@ import type { HeroVisual as HeroVisualType } from '@/lib/heroVisuals'
 import { heroVisualFallbacks, heroVisualMap } from '@/lib/hero-visual-map'
 import { heroOverlayMap } from '@/lib/hero-overlay-map'
 import { heroVisualPresets } from '@/lib/hero-visual-presets'
-import { HeroBackground, type HeroBackgroundVariant } from '@/components/ui/HeroBackground'
+import { HeroBackground, type HeroBackgroundVariant, type HeroBackgroundIntensity } from '@/components/ui/HeroBackground'
 import { getHeroBackgroundVariant } from '@/lib/heroPresets'
+
+function getDefaultIntensity(pathname: string): HeroBackgroundIntensity {
+  if (pathname === '/') return 'medium'
+  if (pathname.startsWith('/expertise')) return 'medium'
+  if (pathname.startsWith('/industries')) return 'medium'
+  if (pathname.startsWith('/case-studies')) return 'medium'
+  if (pathname.startsWith('/projects')) return 'medium'
+  return 'medium'
+}
 
 const HeroVisual = dynamic(
   () => import('@/components/ui/HeroVisual').then((m) => m.HeroVisual),
@@ -42,6 +51,7 @@ interface HeroDarkProps {
   motif?: 'topo' | 'pathway' | 'signal' | 'grid' | 'none' | 'flow'
   rightVisual?: React.ReactNode | HeroVisualType
   backgroundVariant?: HeroBackgroundVariant
+  backgroundIntensity?: HeroBackgroundIntensity
   slug?: string
   kind?: 'expertise' | 'industries' | 'projects'
 }
@@ -59,6 +69,7 @@ export function HeroDark({
   children,
   motif = 'topo',
   backgroundVariant,
+  backgroundIntensity,
   rightVisual,
   slug,
   kind,
@@ -68,6 +79,7 @@ export function HeroDark({
   const pathname = usePathname() ?? (slug ? `/${kind ?? 'expertise'}/${slug}` : '/')
 
   const resolvedBackgroundVariant = backgroundVariant ?? getHeroBackgroundVariant(pathname)
+  const resolvedIntensity = backgroundIntensity ?? getDefaultIntensity(pathname)
 
   const autoImage = slug
     ? (heroVisualMap[slug] ?? (kind ? heroVisualFallbacks[kind] : undefined))
@@ -149,7 +161,7 @@ export function HeroDark({
           <div className="text-cyan-300">{resolvedBackgroundVariant}</div>
         </div>
       )}
-      <HeroBackground variant={resolvedBackgroundVariant} />
+      <HeroBackground variant={resolvedBackgroundVariant} intensity={resolvedIntensity} />
 
       {/* Ambient gradient orbs with drift */}
       <div className="absolute z-0 top-0 left-1/4 w-[600px] h-[600px] bg-brand-500/20 rounded-full blur-3xl animate-drift-slow pointer-events-none" />
