@@ -143,13 +143,13 @@ function SignatureConstellation({ reduced }: { reduced: boolean }) {
           key={`pulse-${idx}`}
           cx={nodes[idx].x}
           cy={nodes[idx].y}
+          r={nodes[idx].size * 2}
           fill="none"
           stroke="#38bdf8"
           strokeWidth="1"
-          initial={{ opacity: 0, r: nodes[idx].size }}
+          initial={{ opacity: 0 }}
           animate={{
             opacity: [0.6, 0],
-            r: [nodes[idx].size, nodes[idx].size * 3],
           }}
           transition={{
             duration: 2.5,
