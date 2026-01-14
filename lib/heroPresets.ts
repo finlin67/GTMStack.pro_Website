@@ -1,46 +1,105 @@
 import type { HeroBackgroundVariant } from '@/components/ui/HeroBackground'
 
-// Mapping of service routes to hero background variants, grouped by service metaphor.
-export const SERVICE_HERO_BACKGROUND_PRESETS: Record<string, HeroBackgroundVariant> = {
-  // Content & Engagement
+const HERO_BACKGROUND_VARIANTS: HeroBackgroundVariant[] = [
+  'contentFlow',
+  'branchingPaths',
+  'orbitingNodes',
+  'funnelStages',
+  'dashboardPulse',
+  'growthCurve',
+  'networkSync',
+  'neuralFlow',
+]
+
+export const HERO_BACKGROUND_PRESETS: Record<string, HeroBackgroundVariant> = {
+  '/': 'growthCurve',
+
+  '/expertise': 'neuralFlow',
+  '/expertise/strategy-insights': 'branchingPaths',
+  '/expertise/demand-growth': 'funnelStages',
+  '/expertise/content-engagement': 'contentFlow',
+  '/expertise/systems-operations': 'networkSync',
+  '/expertise/strategy': 'branchingPaths',
+  '/expertise/analytics': 'dashboardPulse',
+  '/expertise/automation': 'neuralFlow',
+  '/expertise/optimization': 'growthCurve',
+
+  '/industries': 'orbitingNodes',
+
+  '/case-studies': 'dashboardPulse',
+
+  '/projects': 'dashboardPulse',
+
   '/services/content-marketing': 'contentFlow',
   '/services/email': 'contentFlow',
   '/services/omnichannel': 'contentFlow',
   '/services/social-media': 'contentFlow',
   '/services/video-creative': 'contentFlow',
-
-  // Demand & Growth
   '/services/demand-generation': 'funnelStages',
   '/services/paid-advertising': 'funnelStages',
   '/services/events': 'funnelStages',
-
-  // Organic & growth engines
   '/services/seo': 'growthCurve',
   '/services/growth-marketing': 'growthCurve',
-
-  // Relationship and lifecycle programs
   '/services/abm': 'orbitingNodes',
   '/services/customer-marketing': 'orbitingNodes',
   '/services/lifecycle-marketing': 'orbitingNodes',
-
-  // Experience & insight systems
   '/services/cx': 'dashboardPulse',
   '/services/customer-experience': 'dashboardPulse',
   '/services/market-research': 'dashboardPulse',
-
-  // Intelligent automation
   '/services/ai': 'neuralFlow',
   '/services/marketing-automation': 'neuralFlow',
-
-  // Operating systems & infrastructure
   '/services/marketing-operations': 'networkSync',
   '/services/martech': 'networkSync',
   '/services/sales-enablement': 'networkSync',
+
+  '/about': 'branchingPaths',
+  '/contact': 'networkSync',
+  '/resume': 'growthCurve',
+}
+
+const CATEGORY_DEFAULTS: Record<string, HeroBackgroundVariant> = {
+  expertise: 'neuralFlow',
+  industries: 'orbitingNodes',
+  'case-studies': 'dashboardPulse',
+  projects: 'dashboardPulse',
+  services: 'funnelStages',
+}
+
+function stableHash(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash
+  }
+  return Math.abs(hash)
+}
+
+export function getHeroBackgroundVariant(
+  pathname: string
+): HeroBackgroundVariant {
+  if (HERO_BACKGROUND_PRESETS[pathname]) {
+    return HERO_BACKGROUND_PRESETS[pathname]
+  }
+
+  const category = pathname.split('/')[1]
+  if (category && CATEGORY_DEFAULTS[category]) {
+    const categoryDefault = CATEGORY_DEFAULTS[category]
+    const hash = stableHash(pathname)
+    const categoryIndex = HERO_BACKGROUND_VARIANTS.indexOf(categoryDefault)
+    const offset = hash % 3
+    const variantIndex = (categoryIndex + offset) % HERO_BACKGROUND_VARIANTS.length
+    return HERO_BACKGROUND_VARIANTS[variantIndex]
+  }
+
+  const hash = stableHash(pathname)
+  return HERO_BACKGROUND_VARIANTS[hash % HERO_BACKGROUND_VARIANTS.length]
 }
 
 export function getServiceHeroBackgroundPreset(
   route: string
 ): HeroBackgroundVariant | undefined {
-  return SERVICE_HERO_BACKGROUND_PRESETS[route]
+  return HERO_BACKGROUND_PRESETS[route]
 }
 
+export const SERVICE_HERO_BACKGROUND_PRESETS = HERO_BACKGROUND_PRESETS

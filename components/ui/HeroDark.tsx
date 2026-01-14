@@ -3,6 +3,7 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
 import { FadeIn, HoverScale, StaggerContainer, StaggerItem } from '@/components/motion/FadeIn'
 import { cn } from '@/lib/utils'
@@ -13,6 +14,7 @@ import { heroVisualFallbacks, heroVisualMap } from '@/lib/hero-visual-map'
 import { heroOverlayMap } from '@/lib/hero-overlay-map'
 import { heroVisualPresets } from '@/lib/hero-visual-presets'
 import { HeroBackground, type HeroBackgroundVariant } from '@/components/ui/HeroBackground'
+import { getHeroBackgroundVariant } from '@/lib/heroPresets'
 
 const HeroVisual = dynamic(
   () => import('@/components/ui/HeroVisual').then((m) => m.HeroVisual),
@@ -61,15 +63,14 @@ export function HeroDark({
 }: HeroDarkProps) {
   const isLarge = size === 'large'
   const isCentered = align === 'center'
+  const pathname = usePathname() ?? (slug ? `/${kind ?? 'expertise'}/${slug}` : '/')
 
-  // Derive auto image/overlay purely from slug (no effects, no window/pathname).
+  const resolvedBackgroundVariant = backgroundVariant ?? getHeroBackgroundVariant(pathname)
+
   const autoImage = slug
     ? (heroVisualMap[slug] ?? (kind ? heroVisualFallbacks[kind] : undefined))
     : undefined
   const autoOverlay = slug ? heroOverlayMap[slug] : undefined
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[HeroDark auto]', { slug, kind, autoImage, autoOverlay })
-  }
 
   const preset = kind ? heroVisualPresets[kind] : undefined
   const presetClassName = preset?.className
@@ -140,7 +141,7 @@ export function HeroDark({
         className
       )}
     >
-      {backgroundVariant && <HeroBackground variant={backgroundVariant} />}
+      <HeroBackground variant={resolvedBackgroundVariant} />
 
       {/* Ambient gradient orbs with drift */}
       <div className="absolute z-0 top-0 left-1/4 w-[600px] h-[600px] bg-brand-500/20 rounded-full blur-3xl animate-drift-slow pointer-events-none" />

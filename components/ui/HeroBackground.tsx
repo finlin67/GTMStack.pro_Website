@@ -21,8 +21,8 @@ interface HeroBackgroundProps {
 
 const baseTransition = {
   duration: 18,
-  repeat: Infinity as const,
-  ease: 'easeInOut' as const,
+  repeat: Infinity,
+  ease: 'easeInOut',
   repeatType: 'mirror' as const,
 }
 
@@ -586,7 +586,7 @@ function NeuralFlow({ reduced }: { reduced: boolean }) {
 }
 
 export function HeroBackground({ variant, className }: HeroBackgroundProps) {
-  const prefersReducedMotion = useReducedMotion()
+  const prefersReducedMotion = useReducedMotion() ?? false
 
   return (
     <div
