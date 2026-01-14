@@ -122,10 +122,9 @@ function SignatureConstellation({ reduced }: { reduced: boolean }) {
             r={node.size}
             fill="#38bdf8"
             {...(!reduced && {
-              initial: { opacity: 0.3, scale: 0.8 },
+              initial: { opacity: 0.3 },
               animate: {
                 opacity: [0.4, 0.8, 0.4],
-                scale: [0.9, 1.1, 0.9],
               },
               transition: {
                 duration: 3 + (i % 3),
@@ -144,14 +143,13 @@ function SignatureConstellation({ reduced }: { reduced: boolean }) {
           key={`pulse-${idx}`}
           cx={nodes[idx].x}
           cy={nodes[idx].y}
-          r={nodes[idx].size}
           fill="none"
           stroke="#38bdf8"
           strokeWidth="1"
-          initial={{ opacity: 0, scale: 1 }}
+          initial={{ opacity: 0, r: nodes[idx].size }}
           animate={{
             opacity: [0.6, 0],
-            scale: [1, 3],
+            r: [nodes[idx].size, nodes[idx].size * 3],
           }}
           transition={{
             duration: 2.5,
@@ -185,14 +183,15 @@ export function HeroVisual({
   const prevImageRef = useRef<string | undefined>(image)
   const prevPathwaySvgRef = useRef<string | undefined>(pathwaySvg)
   const prefersReducedMotion = useReducedMotion()
-  const kenBurnsDuration = useMemo(
-    () => (prefersReducedMotion ? 0 : 20 + Math.random() * 6),
-    [prefersReducedMotion]
-  )
-  const shimmerDuration = useMemo(
-    () => (prefersReducedMotion ? 0 : 14 + Math.random() * 4),
-    [prefersReducedMotion]
-  )
+  const [hasMounted, setHasMounted] = useState(false)
+  
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+  
+  const reducedMotion = hasMounted ? prefersReducedMotion : false
+  const kenBurnsDuration = reducedMotion ? 0 : 23
+  const shimmerDuration = reducedMotion ? 0 : 16
 
   // Reset imageError + isLoaded whenever image changes (handles falsy→truthy transitions and any other change)
   useEffect(() => {
@@ -228,7 +227,7 @@ export function HeroVisual({
   const showSkeleton = !image || imageError || !isLoaded
 
   // Motion configuration - respect prefers-reduced-motion
-  const motionConfig = prefersReducedMotion
+  const motionConfig = reducedMotion
     ? {
         initial: { opacity: 1, y: 0 },
         animate: { opacity: 1, y: 0 },
@@ -262,13 +261,13 @@ export function HeroVisual({
         </div>
 
         <div className="absolute inset-0 z-10">
-          <SignatureConstellation reduced={!!prefersReducedMotion} />
+          <SignatureConstellation reduced={!!reducedMotion} />
         </div>
 
         <div className="absolute inset-0 z-20 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
         <div className="absolute inset-0 z-20 bg-gradient-to-br from-brand-500/10 via-transparent to-cyan-500/8" />
 
-        {!prefersReducedMotion && (
+        {!reducedMotion && (
           <motion.div
             className="absolute inset-0 z-[25] pointer-events-none"
             animate={{ x: ['-30%', '130%'] }}
@@ -301,7 +300,7 @@ export function HeroVisual({
       transition={motionConfig.transition}
     >
       {/* Ambient drift orb behind image */}
-      {!prefersReducedMotion && (
+      {!reducedMotion && (
         <motion.div
           className="absolute inset-0 -z-10 will-change-transform"
           animate={{
@@ -402,14 +401,14 @@ export function HeroVisual({
           <motion.div
             className="absolute inset-0"
             animate={
-              prefersReducedMotion
+              reducedMotion
                 ? { scale: 1 }
                 : {
                     scale: [1, 1.04, 1],
                   }
             }
             transition={
-              prefersReducedMotion
+              reducedMotion
                 ? { duration: 0 }
                 : {
                     duration: kenBurnsDuration,
@@ -464,7 +463,7 @@ export function HeroVisual({
       <div className="absolute inset-0 z-50 bg-gradient-to-tl from-transparent via-transparent to-cool-500/5" />
       
       {/* Shimmer sweep overlay */}
-      {!prefersReducedMotion && (
+      {!reducedMotion && (
         <motion.div
           className="absolute inset-0 z-[55] pointer-events-none"
           animate={{
