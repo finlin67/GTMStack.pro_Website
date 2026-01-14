@@ -57,14 +57,6 @@ export const HERO_BACKGROUND_PRESETS: Record<string, HeroBackgroundVariant> = {
   '/resume': 'growthCurve',
 }
 
-const CATEGORY_DEFAULTS: Record<string, HeroBackgroundVariant> = {
-  expertise: 'neuralFlow',
-  industries: 'orbitingNodes',
-  'case-studies': 'dashboardPulse',
-  projects: 'dashboardPulse',
-  services: 'funnelStages',
-}
-
 function stableHash(str: string): number {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
@@ -80,16 +72,6 @@ export function getHeroBackgroundVariant(
 ): HeroBackgroundVariant {
   if (HERO_BACKGROUND_PRESETS[pathname]) {
     return HERO_BACKGROUND_PRESETS[pathname]
-  }
-
-  const category = pathname.split('/')[1]
-  if (category && CATEGORY_DEFAULTS[category]) {
-    const categoryDefault = CATEGORY_DEFAULTS[category]
-    const hash = stableHash(pathname)
-    const categoryIndex = HERO_BACKGROUND_VARIANTS.indexOf(categoryDefault)
-    const offset = hash % 3
-    const variantIndex = (categoryIndex + offset) % HERO_BACKGROUND_VARIANTS.length
-    return HERO_BACKGROUND_VARIANTS[variantIndex]
   }
 
   const hash = stableHash(pathname)
