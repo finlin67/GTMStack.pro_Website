@@ -1,0 +1,24 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+  <g stroke="currentColor" fill="none" stroke-width="1.5" opacity="0.22">
+    <!-- Circuit traces -->
+    <path d="M 200 300 L 400 300 L 400 500 L 600 500 L 600 300 L 800 300" 
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 300 400 L 300 600 L 500 600 L 500 800 L 700 800" 
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 600 700 L 800 700 L 800 500 L 1000 500" 
+          stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Circuit nodes -->
+    <circle cx="400" cy="300" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="400" cy="500" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="600" cy="500" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="600" cy="300" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="300" cy="600" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="500" cy="600" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="500" cy="800" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="700" cy="800" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="800" cy="700" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="800" cy="500" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="1000" cy="500" r="6" fill="currentColor" opacity="0.28"/>
+  </g>
+</svg>

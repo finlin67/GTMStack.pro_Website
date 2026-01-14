@@ -1,0 +1,13 @@
+C:\prod\cursor-gtm-stack-v2\src\components
+C:\prod\cursor-gtm-stack-v2\src\files.txt
+C:\prod\cursor-gtm-stack-v2\src\components\animations
+C:\prod\cursor-gtm-stack-v2\src\components\animations\ContentMarketing.tsx
+C:\prod\cursor-gtm-stack-v2\src\components\animations\ContentMarketingHero.tsx
+C:\prod\cursor-gtm-stack-v2\src\components\animations\DemandGenerationHero.tsx
+C:\prod\cursor-gtm-stack-v2\src\components\animations\EmailMarketingHero.tsx
+C:\prod\cursor-gtm-stack-v2\src\components\animations\index.ts
+C:\prod\cursor-gtm-stack-v2\src\components\animations\MarketingFunnel.tsx
+C:\prod\cursor-gtm-stack-v2\src\components\animations\SEMBidTarget.tsx
+C:\prod\cursor-gtm-stack-v2\src\components\animations\SEOHero.tsx
+C:\prod\cursor-gtm-stack-v2\src\components\animations\SEOKeywordDiscovery.tsx
+C:\prod\cursor-gtm-stack-v2\src\components\animations\SocialMedia.tsx

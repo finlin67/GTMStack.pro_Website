@@ -1,0 +1,39 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+  <g stroke="currentColor" fill="none" stroke-width="1.5" opacity="0.22">
+    <!-- Route map style paths -->
+    <path d="M 200 300 L 350 250 L 500 300 L 650 250 L 800 300 L 950 280 L 1000 300" 
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 200 500 L 400 450 L 600 500 L 800 450 L 1000 500" 
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 200 700 L 350 650 L 500 700 L 650 650 L 800 700 L 950 680 L 1000 700" 
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 200 900 L 400 850 L 600 900 L 800 850 L 1000 900" 
+          stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Route nodes -->
+    <circle cx="350" cy="250" r="6" fill="currentColor" opacity="0.25"/>
+    <circle cx="500" cy="300" r="7" fill="currentColor" opacity="0.28"/>
+    <circle cx="650" cy="250" r="6" fill="currentColor" opacity="0.25"/>
+    <circle cx="800" cy="300" r="7" fill="currentColor" opacity="0.28"/>
+    <circle cx="950" cy="280" r="6" fill="currentColor" opacity="0.25"/>
+    
+    <circle cx="400" cy="450" r="6" fill="currentColor" opacity="0.25"/>
+    <circle cx="600" cy="500" r="7" fill="currentColor" opacity="0.28"/>
+    <circle cx="800" cy="450" r="6" fill="currentColor" opacity="0.25"/>
+    
+    <circle cx="350" cy="650" r="6" fill="currentColor" opacity="0.25"/>
+    <circle cx="500" cy="700" r="7" fill="currentColor" opacity="0.28"/>
+    <circle cx="650" cy="650" r="6" fill="currentColor" opacity="0.25"/>
+    <circle cx="800" cy="700" r="7" fill="currentColor" opacity="0.28"/>
+    <circle cx="950" cy="680" r="6" fill="currentColor" opacity="0.25"/>
+    
+    <circle cx="400" cy="850" r="6" fill="currentColor" opacity="0.25"/>
+    <circle cx="600" cy="900" r="7" fill="currentColor" opacity="0.28"/>
+    <circle cx="800" cy="850" r="6" fill="currentColor" opacity="0.25"/>
+    
+    <!-- Cross-connections -->
+    <line x1="500" y1="300" x2="600" y2="500" stroke-width="1" opacity="0.15"/>
+    <line x1="800" y1="300" x2="800" y2="450" stroke-width="1" opacity="0.15"/>
+    <line x1="500" y1="700" x2="600" y2="900" stroke-width="1" opacity="0.15"/>
+  </g>
+</svg>

@@ -1,0 +1,36 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+  <g stroke="currentColor" fill="none" stroke-width="1.5" opacity="0.22">
+    <!-- Flow lines -->
+    <path d="M 200 400 L 400 300 L 600 400 L 800 350 L 1000 400" 
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 200 600 L 400 550 L 600 600 L 800 550 L 1000 600" 
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 200 800 L 400 750 L 600 800 L 800 750 L 1000 800" 
+          stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Arrows -->
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+        <polygon points="0 0, 10 3, 0 6" fill="currentColor" opacity="0.25"/>
+      </marker>
+    </defs>
+    
+    <line x1="400" y1="300" x2="600" y2="400" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.20"/>
+    <line x1="600" y1="400" x2="800" y2="350" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.20"/>
+    <line x1="400" y1="550" x2="600" y2="600" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.20"/>
+    <line x1="600" y1="600" x2="800" y2="550" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.20"/>
+    <line x1="400" y1="750" x2="600" y2="800" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.20"/>
+    <line x1="600" y1="800" x2="800" y2="750" stroke-width="1.5" marker-end="url(#arrowhead)" opacity="0.20"/>
+    
+    <!-- Flow nodes -->
+    <circle cx="400" cy="300" r="5" fill="currentColor" opacity="0.25"/>
+    <circle cx="600" cy="400" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="800" cy="350" r="5" fill="currentColor" opacity="0.25"/>
+    <circle cx="400" cy="550" r="5" fill="currentColor" opacity="0.25"/>
+    <circle cx="600" cy="600" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="800" cy="550" r="5" fill="currentColor" opacity="0.25"/>
+    <circle cx="400" cy="750" r="5" fill="currentColor" opacity="0.25"/>
+    <circle cx="600" cy="800" r="6" fill="currentColor" opacity="0.28"/>
+    <circle cx="800" cy="750" r="5" fill="currentColor" opacity="0.25"/>
+  </g>
+</svg>

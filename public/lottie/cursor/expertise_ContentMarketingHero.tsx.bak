@@ -1,0 +1,887 @@
+/**
+ * ContentMarketingHero Component
+ * 
+ * A modern, isometric content creation pipeline visualization showing
+ * content flowing from a source document through transformation stages
+ * to multiple distribution channels.
+ * 
+ * @example
+ * // Basic usage
+ * <ContentMarketingHero />
+ * 
+ * // With custom speed (1.5x faster)
+ * <ContentMarketingHero speed={1.5} />
+ * 
+ * // Paused state
+ * <ContentMarketingHero isPaused={true} />
+ * 
+ * // With reduced motion
+ * <ContentMarketingHero reducedMotion={true} />
+ */
+
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { motion, Variants, useReducedMotion, AnimatePresence } from 'framer-motion'
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+interface ContentMarketingHeroProps {
+  /** Animation speed multiplier (default: 1) */
+  speed?: number
+  /** Pause the animation */
+  isPaused?: boolean
+  /** Force reduced motion mode */
+  reducedMotion?: boolean
+  /** Additional className for the container */
+  className?: string
+}
+
+interface ContentPiece {
+  id: number
+  delay: number
+  targetChannel: number // 0, 1, or 2
+}
+
+interface Particle {
+  id: number
+  x: number
+  y: number
+}
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const BASE_DURATION = 11 // Total loop duration in seconds
+
+// Channel endpoints (blog, ebook, whitepaper)
+const CHANNELS = [
+  { x: 320, y: 100, label: 'Blog', icon: 'article' },
+  { x: 350, y: 180, label: 'eBook', icon: 'book' },
+  { x: 320, y: 260, label: 'Paper', icon: 'doc' },
+]
+
+// Source document position
+const SOURCE = { x: 60, y: 180 }
+
+// Transformation hub position
+const HUB = { x: 200, y: 180 }
+
+// =============================================================================
+// ANIMATION VARIANTS
+// =============================================================================
+
+const createSourceDocVariants = (duration: number): Variants => ({
+  idle: { scale: 1 },
+  pulse: {
+    scale: [1, 1.02, 1],
+    transition: {
+      duration: duration * 0.1,
+      repeat: Infinity,
+      repeatDelay: duration * 0.15,
+      ease: 'easeInOut',
+    },
+  },
+})
+
+const createConveyorVariants = (duration: number): Variants => ({
+  animate: {
+    strokeDashoffset: [0, -20],
+    transition: {
+      duration: duration * 0.05,
+      repeat: Infinity,
+      ease: 'linear',
+    },
+  },
+})
+
+const createChannelPulseVariants = (duration: number, delay: number): Variants => ({
+  pulse: {
+    scale: [1, 1.15, 1],
+    opacity: [0.5, 1, 0.5],
+    transition: {
+      duration: duration * 0.08,
+      delay,
+      repeat: Infinity,
+      repeatDelay: duration * 0.25,
+      ease: 'easeOut',
+    },
+  },
+})
+
+const createHubGlowVariants = (duration: number): Variants => ({
+  glow: {
+    opacity: [0.3, 0.7, 0.3],
+    scale: [1, 1.1, 1],
+    transition: {
+      duration: duration * 0.15,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    },
+  },
+})
+
+// =============================================================================
+// COMPONENT
+// =============================================================================
+
+const ContentMarketingHero: React.FC<ContentMarketingHeroProps> = ({
+  speed = 1,
+  isPaused = false,
+  reducedMotion: forceReducedMotion = false,
+  className = '',
+}) => {
+  // Check for system reduced motion preference
+  const systemReducedMotion = useReducedMotion()
+  const shouldReduceMotion = forceReducedMotion || systemReducedMotion
+
+  // Calculate actual duration based on speed
+  const duration = useMemo(() => BASE_DURATION / speed, [speed])
+
+  // State for content pieces and particles
+  const [contentPieces, setContentPieces] = useState<ContentPiece[]>([])
+  const [particles, setParticles] = useState<Particle[]>([])
+
+  // Create a new content piece
+  const createContentPiece = useCallback(() => {
+    const id = Date.now() + Math.random()
+    const delay = Math.random() * 0.2
+    const targetChannel = Math.floor(Math.random() * 3)
+    return { id, delay, targetChannel }
+  }, [])
+
+  // Spawn content pieces periodically
+  useEffect(() => {
+    if (isPaused || shouldReduceMotion) return
+
+    const interval = setInterval(() => {
+      setContentPieces(prev => {
+        const filtered = prev.slice(-6)
+        return [...filtered, createContentPiece()]
+      })
+    }, (duration * 0.12) * 1000) // Spawn every ~12% of duration
+
+    return () => clearInterval(interval)
+  }, [duration, isPaused, shouldReduceMotion, createContentPiece])
+
+  // Spawn particles at hub
+  useEffect(() => {
+    if (isPaused || shouldReduceMotion) return
+
+    const interval = setInterval(() => {
+      const id = Date.now() + Math.random()
+      const x = HUB.x + (Math.random() - 0.5) * 40
+      const y = HUB.y + (Math.random() - 0.5) * 40
+      setParticles(prev => [...prev.slice(-8), { id, x, y }])
+    }, 800)
+
+    return () => clearInterval(interval)
+  }, [isPaused, shouldReduceMotion])
+
+  // Remove completed content pieces
+  const handleContentComplete = (id: number) => {
+    setContentPieces(prev => prev.filter(p => p.id !== id))
+  }
+
+  // Remove particles
+  const handleParticleComplete = (id: number) => {
+    setParticles(prev => prev.filter(p => p.id !== id))
+  }
+
+  // Memoized variants
+  const sourceDocVariants = useMemo(() => createSourceDocVariants(duration), [duration])
+  const conveyorVariants = useMemo(() => createConveyorVariants(duration), [duration])
+  const hubGlowVariants = useMemo(() => createHubGlowVariants(duration), [duration])
+
+  // Reduced motion: show static state
+  if (shouldReduceMotion) {
+    return (
+      <div className={`relative w-full max-w-xl ${className}`}>
+        <svg viewBox="0 0 400 350" className="w-full h-auto">
+          <StaticPipeline />
+        </svg>
+      </div>
+    )
+  }
+
+  return (
+    <div className={`relative w-full max-w-xl select-none ${className}`}>
+      {/* Ambient background glow */}
+      <div className="absolute inset-0 blur-3xl opacity-20 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-40 h-40 bg-blue-500 rounded-full" />
+        <div className="absolute bottom-1/3 right-1/4 w-48 h-48 bg-indigo-600 rounded-full" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-32 h-32 bg-purple-500 rounded-full" />
+      </div>
+
+      <motion.svg
+        viewBox="0 0 400 350"
+        className="w-full h-auto relative z-10"
+        preserveAspectRatio="xMidYMid meet"
+        initial="idle"
+        animate={isPaused ? 'idle' : 'animate'}
+      >
+        <defs>
+          {/* Source document gradient */}
+          <linearGradient id="cmh-sourceDoc" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#475569" />
+            <stop offset="50%" stopColor="#334155" />
+            <stop offset="100%" stopColor="#1e293b" />
+          </linearGradient>
+
+          {/* Content piece gradient (initial) */}
+          <linearGradient id="cmh-contentStart" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#94a3b8" />
+            <stop offset="100%" stopColor="#64748b" />
+          </linearGradient>
+
+          {/* Content piece gradient (transformed) */}
+          <linearGradient id="cmh-contentEnd" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#60a5fa" />
+            <stop offset="50%" stopColor="#6366f1" />
+            <stop offset="100%" stopColor="#8b5cf6" />
+          </linearGradient>
+
+          {/* Hub/transformation gradient */}
+          <linearGradient id="cmh-hub" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#3b82f6" />
+            <stop offset="100%" stopColor="#6366f1" />
+          </linearGradient>
+
+          {/* Channel icon gradients */}
+          <linearGradient id="cmh-channel1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#22d3ee" />
+            <stop offset="100%" stopColor="#3b82f6" />
+          </linearGradient>
+
+          <linearGradient id="cmh-channel2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#a78bfa" />
+            <stop offset="100%" stopColor="#6366f1" />
+          </linearGradient>
+
+          <linearGradient id="cmh-channel3" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f472b6" />
+            <stop offset="100%" stopColor="#8b5cf6" />
+          </linearGradient>
+
+          {/* Conveyor line gradient */}
+          <linearGradient id="cmh-conveyor" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#475569" />
+            <stop offset="50%" stopColor="#6366f1" />
+            <stop offset="100%" stopColor="#475569" />
+          </linearGradient>
+
+          {/* Glow filter */}
+          <filter id="cmh-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          <filter id="cmh-softGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          <filter id="cmh-shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="3" stdDeviation="4" floodOpacity="0.25" />
+          </filter>
+        </defs>
+
+        {/* Background decorative elements */}
+        <BackgroundDecor duration={duration} isPaused={isPaused} />
+
+        {/* Conveyor belt / pathway */}
+        <ConveyorBelt 
+          variants={conveyorVariants} 
+          isPaused={isPaused}
+          duration={duration}
+        />
+
+        {/* Source Document */}
+        <SourceDocument 
+          variants={sourceDocVariants} 
+          isPaused={isPaused} 
+        />
+
+        {/* Transformation Hub */}
+        <TransformationHub 
+          variants={hubGlowVariants} 
+          isPaused={isPaused}
+        />
+
+        {/* Channel Endpoints */}
+        {CHANNELS.map((channel, index) => (
+          <ChannelEndpoint
+            key={index}
+            channel={channel}
+            index={index}
+            duration={duration}
+            isPaused={isPaused}
+          />
+        ))}
+
+        {/* Animated Content Pieces */}
+        <AnimatePresence>
+          {contentPieces.map((piece) => (
+            <ContentPieceAnimated
+              key={piece.id}
+              piece={piece}
+              duration={duration}
+              onComplete={() => handleContentComplete(piece.id)}
+            />
+          ))}
+        </AnimatePresence>
+
+        {/* Particles around hub */}
+        <AnimatePresence>
+          {particles.map((particle) => (
+            <ParticleEffect
+              key={particle.id}
+              particle={particle}
+              onComplete={() => handleParticleComplete(particle.id)}
+            />
+          ))}
+        </AnimatePresence>
+
+        {/* Label */}
+        <motion.text
+          x="200"
+          y="330"
+          textAnchor="middle"
+          fill="#94a3b8"
+          fontSize="12"
+          fontWeight="500"
+          style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          CONTENT CREATION PIPELINE
+        </motion.text>
+      </motion.svg>
+
+      {/* Stats panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8 }}
+        className="flex justify-center gap-3 md:gap-5 text-center mt-3"
+      >
+        <StatCard value="156" label="Articles" gradient="from-cyan-400 to-blue-500" />
+        <StatCard value="24" label="eBooks" gradient="from-violet-400 to-indigo-500" />
+        <StatCard value="12" label="Papers" gradient="from-pink-400 to-purple-500" />
+        <StatCard value="2.4M" label="Reach" gradient="from-blue-400 to-indigo-500" />
+      </motion.div>
+    </div>
+  )
+}
+
+// =============================================================================
+// SUB-COMPONENTS
+// =============================================================================
+
+/** Static pipeline for reduced motion */
+const StaticPipeline: React.FC = () => (
+  <g>
+    {/* Source doc */}
+    <rect x={SOURCE.x - 25} y={SOURCE.y - 35} width="50" height="70" rx="4" fill="#334155" />
+    {/* Lines on doc */}
+    <rect x={SOURCE.x - 18} y={SOURCE.y - 25} width="30" height="4" rx="2" fill="#64748b" />
+    <rect x={SOURCE.x - 18} y={SOURCE.y - 15} width="25" height="4" rx="2" fill="#64748b" />
+    <rect x={SOURCE.x - 18} y={SOURCE.y - 5} width="28" height="4" rx="2" fill="#64748b" />
+    {/* Hub */}
+    <circle cx={HUB.x} cy={HUB.y} r="25" fill="#6366f1" />
+    {/* Channels */}
+    {CHANNELS.map((ch, i) => (
+      <circle key={i} cx={ch.x} cy={ch.y} r="20" fill={`url(#cmh-channel${i + 1})`} />
+    ))}
+  </g>
+)
+
+/** Background decorative elements */
+const BackgroundDecor: React.FC<{ duration: number; isPaused: boolean }> = ({ duration, isPaused }) => (
+  <g>
+    {/* Decorative circles */}
+    {[
+      { cx: 50, cy: 80, r: 3 },
+      { cx: 370, cy: 120, r: 2 },
+      { cx: 30, cy: 280, r: 2 },
+      { cx: 380, cy: 300, r: 3 },
+    ].map((circle, i) => (
+      <motion.circle
+        key={i}
+        cx={circle.cx}
+        cy={circle.cy}
+        r={circle.r}
+        fill="#6366f1"
+        initial={{ opacity: 0 }}
+        animate={isPaused ? {} : {
+          opacity: [0, 0.5, 0],
+          scale: [0.8, 1.2, 0.8],
+        }}
+        transition={{
+          duration: duration * 0.3,
+          delay: i * 0.5,
+          repeat: Infinity,
+          repeatDelay: duration * 0.2,
+        }}
+      />
+    ))}
+    
+    {/* Decorative lines */}
+    <motion.line
+      x1="25"
+      y1="150"
+      x2="40"
+      y2="145"
+      stroke="#60a5fa"
+      strokeWidth="2"
+      strokeLinecap="round"
+      initial={{ opacity: 0 }}
+      animate={isPaused ? {} : { opacity: [0, 0.4, 0] }}
+      transition={{ duration: duration * 0.25, delay: 1, repeat: Infinity }}
+    />
+    <motion.line
+      x1="365"
+      y1="220"
+      x2="385"
+      y2="215"
+      stroke="#818cf8"
+      strokeWidth="2"
+      strokeLinecap="round"
+      initial={{ opacity: 0 }}
+      animate={isPaused ? {} : { opacity: [0, 0.4, 0] }}
+      transition={{ duration: duration * 0.25, delay: 2, repeat: Infinity }}
+    />
+  </g>
+)
+
+/** Conveyor belt pathways */
+const ConveyorBelt: React.FC<{ 
+  variants: Variants
+  isPaused: boolean
+  duration: number
+}> = ({ isPaused, duration }) => (
+  <g>
+    {/* Main path from source to hub */}
+    <motion.line
+      x1={SOURCE.x + 25}
+      y1={SOURCE.y}
+      x2={HUB.x - 30}
+      y2={HUB.y}
+      stroke="#334155"
+      strokeWidth="3"
+      strokeDasharray="8 4"
+      initial={{ strokeDashoffset: 0 }}
+      animate={isPaused ? {} : { strokeDashoffset: -24 }}
+      transition={{ duration: duration * 0.08, repeat: Infinity, ease: 'linear' }}
+    />
+
+    {/* Paths from hub to channels */}
+    {CHANNELS.map((channel, i) => (
+      <motion.line
+        key={i}
+        x1={HUB.x + 25}
+        y1={HUB.y + (i - 1) * 15}
+        x2={channel.x - 25}
+        y2={channel.y}
+        stroke="#334155"
+        strokeWidth="2"
+        strokeDasharray="6 3"
+        initial={{ strokeDashoffset: 0 }}
+        animate={isPaused ? {} : { strokeDashoffset: -18 }}
+        transition={{ 
+          duration: duration * 0.06, 
+          delay: i * 0.1,
+          repeat: Infinity, 
+          ease: 'linear' 
+        }}
+      />
+    ))}
+
+    {/* Glow overlay on main path */}
+    <motion.line
+      x1={SOURCE.x + 25}
+      y1={SOURCE.y}
+      x2={HUB.x - 30}
+      y2={HUB.y}
+      stroke="url(#cmh-conveyor)"
+      strokeWidth="4"
+      strokeLinecap="round"
+      opacity="0.3"
+      filter="url(#cmh-softGlow)"
+    />
+  </g>
+)
+
+/** Source document component */
+const SourceDocument: React.FC<{ 
+  variants: Variants
+  isPaused: boolean 
+}> = ({ variants, isPaused }) => (
+  <motion.g
+    variants={variants}
+    initial="idle"
+    animate={isPaused ? 'idle' : 'pulse'}
+    style={{ transformOrigin: `${SOURCE.x}px ${SOURCE.y}px` }}
+    filter="url(#cmh-shadow)"
+  >
+    {/* Document body */}
+    <rect
+      x={SOURCE.x - 28}
+      y={SOURCE.y - 40}
+      width="56"
+      height="80"
+      rx="6"
+      fill="url(#cmh-sourceDoc)"
+      stroke="#475569"
+      strokeWidth="1"
+    />
+    
+    {/* Document fold corner */}
+    <polygon
+      points={`${SOURCE.x + 15},${SOURCE.y - 40} ${SOURCE.x + 28},${SOURCE.y - 27} ${SOURCE.x + 15},${SOURCE.y - 27}`}
+      fill="#475569"
+    />
+    
+    {/* Content lines on document */}
+    {[0, 12, 24, 36, 48].map((offset, i) => (
+      <motion.rect
+        key={i}
+        x={SOURCE.x - 20}
+        y={SOURCE.y - 28 + offset}
+        width={18 + (i % 3) * 6}
+        height="5"
+        rx="2.5"
+        fill={i < 3 ? 'url(#cmh-contentStart)' : '#475569'}
+        initial={{ opacity: 0.6 }}
+        animate={isPaused ? {} : {
+          opacity: [0.6, 1, 0.6],
+        }}
+        transition={{
+          duration: 2,
+          delay: i * 0.2,
+          repeat: Infinity,
+        }}
+      />
+    ))}
+    
+    {/* Document icon */}
+    <rect
+      x={SOURCE.x + 5}
+      y={SOURCE.y + 15}
+      width="16"
+      height="20"
+      rx="2"
+      fill="none"
+      stroke="#64748b"
+      strokeWidth="1.5"
+    />
+    <line
+      x1={SOURCE.x + 8}
+      y1={SOURCE.y + 20}
+      x2={SOURCE.x + 18}
+      y2={SOURCE.y + 20}
+      stroke="#64748b"
+      strokeWidth="1"
+    />
+    <line
+      x1={SOURCE.x + 8}
+      y1={SOURCE.y + 25}
+      x2={SOURCE.x + 16}
+      y2={SOURCE.y + 25}
+      stroke="#64748b"
+      strokeWidth="1"
+    />
+  </motion.g>
+)
+
+/** Transformation hub component */
+const TransformationHub: React.FC<{ 
+  variants: Variants
+  isPaused: boolean 
+}> = ({ variants, isPaused }) => (
+  <motion.g>
+    {/* Outer glow ring */}
+    <motion.circle
+      cx={HUB.x}
+      cy={HUB.y}
+      r="38"
+      fill="none"
+      stroke="url(#cmh-hub)"
+      strokeWidth="2"
+      opacity="0.3"
+      variants={variants}
+      animate={isPaused ? 'idle' : 'glow'}
+      style={{ transformOrigin: `${HUB.x}px ${HUB.y}px` }}
+    />
+
+    {/* Inner glow */}
+    <motion.circle
+      cx={HUB.x}
+      cy={HUB.y}
+      r="32"
+      fill="url(#cmh-hub)"
+      opacity="0.15"
+      filter="url(#cmh-glow)"
+      animate={isPaused ? {} : {
+        scale: [1, 1.1, 1],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      }}
+      style={{ transformOrigin: `${HUB.x}px ${HUB.y}px` }}
+    />
+
+    {/* Main hub circle */}
+    <circle
+      cx={HUB.x}
+      cy={HUB.y}
+      r="28"
+      fill="url(#cmh-hub)"
+      filter="url(#cmh-shadow)"
+    />
+
+    {/* Hub highlight */}
+    <ellipse
+      cx={HUB.x - 8}
+      cy={HUB.y - 8}
+      rx="10"
+      ry="6"
+      fill="white"
+      opacity="0.2"
+    />
+
+    {/* Transformation icon (gear/cog simplified) */}
+    <g transform={`translate(${HUB.x - 10}, ${HUB.y - 10})`}>
+      <circle cx="10" cy="10" r="6" fill="none" stroke="white" strokeWidth="2" opacity="0.8" />
+      <circle cx="10" cy="10" r="2" fill="white" opacity="0.8" />
+      {/* Gear teeth */}
+      {[0, 60, 120, 180, 240, 300].map((angle, i) => {
+        const rad = (angle * Math.PI) / 180
+        const x1 = 10 + Math.cos(rad) * 6
+        const y1 = 10 + Math.sin(rad) * 6
+        const x2 = 10 + Math.cos(rad) * 9
+        const y2 = 10 + Math.sin(rad) * 9
+        return (
+          <line
+            key={i}
+            x1={x1}
+            y1={y1}
+            x2={x2}
+            y2={y2}
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+            opacity="0.8"
+          />
+        )
+      })}
+    </g>
+  </motion.g>
+)
+
+/** Channel endpoint component */
+const ChannelEndpoint: React.FC<{
+  channel: { x: number; y: number; label: string; icon: string }
+  index: number
+  duration: number
+  isPaused: boolean
+}> = ({ channel, index, duration, isPaused }) => {
+  const pulseVariants = useMemo(
+    () => createChannelPulseVariants(duration, index * 0.8),
+    [duration, index]
+  )
+
+  return (
+    <motion.g>
+      {/* Pulse ring */}
+      <motion.circle
+        cx={channel.x}
+        cy={channel.y}
+        r="28"
+        fill="none"
+        stroke={`url(#cmh-channel${index + 1})`}
+        strokeWidth="2"
+        variants={pulseVariants}
+        animate={isPaused ? 'idle' : 'pulse'}
+        style={{ transformOrigin: `${channel.x}px ${channel.y}px` }}
+      />
+
+      {/* Main circle */}
+      <circle
+        cx={channel.x}
+        cy={channel.y}
+        r="22"
+        fill={`url(#cmh-channel${index + 1})`}
+        filter="url(#cmh-shadow)"
+      />
+
+      {/* Highlight */}
+      <ellipse
+        cx={channel.x - 5}
+        cy={channel.y - 5}
+        rx="8"
+        ry="5"
+        fill="white"
+        opacity="0.25"
+      />
+
+      {/* Icon based on type */}
+      <g transform={`translate(${channel.x - 8}, ${channel.y - 8})`}>
+        {channel.icon === 'article' && <ArticleIcon />}
+        {channel.icon === 'book' && <BookIcon />}
+        {channel.icon === 'doc' && <DocIcon />}
+      </g>
+
+      {/* Label */}
+      <text
+        x={channel.x}
+        y={channel.y + 38}
+        textAnchor="middle"
+        fill="#94a3b8"
+        fontSize="9"
+        fontWeight="500"
+        style={{ fontFamily: 'Outfit, system-ui, sans-serif' }}
+      >
+        {channel.label}
+      </text>
+    </motion.g>
+  )
+}
+
+// Simple icon components
+const ArticleIcon: React.FC = () => (
+  <g fill="white" opacity="0.9">
+    <rect x="2" y="0" width="12" height="16" rx="1" fill="none" stroke="white" strokeWidth="1.5" />
+    <line x1="4" y1="4" x2="12" y2="4" stroke="white" strokeWidth="1" />
+    <line x1="4" y1="7" x2="11" y2="7" stroke="white" strokeWidth="1" />
+    <line x1="4" y1="10" x2="10" y2="10" stroke="white" strokeWidth="1" />
+  </g>
+)
+
+const BookIcon: React.FC = () => (
+  <g fill="white" opacity="0.9">
+    <rect x="1" y="2" width="14" height="12" rx="1" fill="none" stroke="white" strokeWidth="1.5" />
+    <line x1="8" y1="2" x2="8" y2="14" stroke="white" strokeWidth="1" />
+    <line x1="3" y1="5" x2="6" y2="5" stroke="white" strokeWidth="0.8" />
+    <line x1="3" y1="8" x2="6" y2="8" stroke="white" strokeWidth="0.8" />
+    <line x1="10" y1="5" x2="13" y2="5" stroke="white" strokeWidth="0.8" />
+    <line x1="10" y1="8" x2="13" y2="8" stroke="white" strokeWidth="0.8" />
+  </g>
+)
+
+const DocIcon: React.FC = () => (
+  <g fill="white" opacity="0.9">
+    <rect x="2" y="0" width="12" height="16" rx="1" fill="none" stroke="white" strokeWidth="1.5" />
+    <polygon points="10,0 14,4 10,4" fill="white" opacity="0.5" />
+    <line x1="4" y1="7" x2="12" y2="7" stroke="white" strokeWidth="1" />
+    <line x1="4" y1="10" x2="10" y2="10" stroke="white" strokeWidth="1" />
+    <line x1="4" y1="13" x2="8" y2="13" stroke="white" strokeWidth="1" />
+  </g>
+)
+
+/** Animated content piece */
+const ContentPieceAnimated: React.FC<{
+  piece: ContentPiece
+  duration: number
+  onComplete: () => void
+}> = ({ piece, duration, onComplete }) => {
+  const channel = CHANNELS[piece.targetChannel]
+  
+  // Path keyframes: source -> hub -> channel
+  const pathX = [SOURCE.x + 30, HUB.x - 10, HUB.x, HUB.x + 10, channel.x - 22]
+  const pathY = [SOURCE.y, HUB.y, HUB.y, HUB.y + (piece.targetChannel - 1) * 20, channel.y]
+
+  return (
+    <motion.g
+      initial={{
+        x: pathX[0],
+        y: pathY[0],
+        scale: 0.6,
+        opacity: 0,
+        rotate: 0,
+      }}
+      animate={{
+        x: pathX,
+        y: pathY,
+        scale: [0.6, 0.8, 1.2, 1.1, 0.9],
+        opacity: [0, 1, 1, 1, 0],
+        rotate: [0, 0, 5, 3, 0],
+      }}
+      transition={{
+        duration: duration * 0.35,
+        delay: piece.delay,
+        ease: 'easeInOut',
+        times: [0, 0.25, 0.5, 0.75, 1],
+      }}
+      onAnimationComplete={onComplete}
+      exit={{ opacity: 0 }}
+    >
+      {/* Content block */}
+      <motion.rect
+        x={-8}
+        y={-5}
+        width="16"
+        height="10"
+        rx="3"
+        fill="url(#cmh-contentEnd)"
+        filter="url(#cmh-softGlow)"
+      />
+      
+      {/* Content lines */}
+      <line x1={-5} y1={-2} x2={5} y2={-2} stroke="white" strokeWidth="1" opacity="0.6" />
+      <line x1={-5} y1={1} x2={3} y2={1} stroke="white" strokeWidth="1" opacity="0.4" />
+    </motion.g>
+  )
+}
+
+/** Particle effect around hub */
+const ParticleEffect: React.FC<{
+  particle: Particle
+  onComplete: () => void
+}> = ({ particle, onComplete }) => (
+  <motion.circle
+    cx={particle.x}
+    cy={particle.y}
+    r={2}
+    fill="#818cf8"
+    initial={{ opacity: 0, scale: 0 }}
+    animate={{
+      opacity: [0, 0.8, 0],
+      scale: [0, 1.5, 0],
+      y: [particle.y, particle.y - 20],
+    }}
+    transition={{
+      duration: 1.5,
+      ease: 'easeOut',
+    }}
+    onAnimationComplete={onComplete}
+    exit={{ opacity: 0 }}
+  />
+)
+
+/** Stats card component */
+const StatCard: React.FC<{ value: string; label: string; gradient: string }> = ({
+  value,
+  label,
+  gradient,
+}) => (
+  <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-slate-700/50">
+    <div className={`text-lg font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>
+      {value}
+    </div>
+    <div className="text-[10px] text-slate-400 uppercase tracking-wider">{label}</div>
+  </div>
+)
+
+export default ContentMarketingHero
+

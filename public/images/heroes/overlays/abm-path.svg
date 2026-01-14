@@ -1,0 +1,29 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+  <g stroke="currentColor" fill="none" stroke-width="1.5" opacity="0.22">
+    <!-- Curved path -->
+    <path d="M 200 300 Q 400 200, 600 300 T 1000 300" stroke-linecap="round"/>
+    <path d="M 200 500 Q 500 400, 800 500 T 1000 500" stroke-linecap="round"/>
+    <path d="M 200 700 Q 450 600, 700 700 T 1000 700" stroke-linecap="round"/>
+    
+    <!-- Nodes along paths -->
+    <circle cx="200" cy="300" r="6" fill="currentColor" opacity="0.3"/>
+    <circle cx="400" cy="250" r="5" fill="currentColor" opacity="0.25"/>
+    <circle cx="600" cy="300" r="7" fill="currentColor" opacity="0.35"/>
+    <circle cx="800" cy="300" r="5" fill="currentColor" opacity="0.25"/>
+    <circle cx="1000" cy="300" r="6" fill="currentColor" opacity="0.3"/>
+    
+    <circle cx="200" cy="500" r="5" fill="currentColor" opacity="0.25"/>
+    <circle cx="500" cy="450" r="6" fill="currentColor" opacity="0.3"/>
+    <circle cx="800" cy="500" r="7" fill="currentColor" opacity="0.35"/>
+    <circle cx="1000" cy="500" r="5" fill="currentColor" opacity="0.25"/>
+    
+    <circle cx="200" cy="700" r="6" fill="currentColor" opacity="0.3"/>
+    <circle cx="450" cy="650" r="5" fill="currentColor" opacity="0.25"/>
+    <circle cx="700" cy="700" r="7" fill="currentColor" opacity="0.35"/>
+    <circle cx="1000" cy="700" r="6" fill="currentColor" opacity="0.3"/>
+    
+    <!-- Connecting lines -->
+    <line x1="600" y1="300" x2="800" y2="500" stroke-width="1" opacity="0.15"/>
+    <line x1="800" y1="500" x2="700" y2="700" stroke-width="1" opacity="0.15"/>
+  </g>
+</svg>

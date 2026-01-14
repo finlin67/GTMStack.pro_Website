@@ -1,0 +1,25 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
+  <g stroke="currentColor" fill="none" stroke-width="1.5" opacity="0.20">
+    <!-- Tile grid pattern -->
+    <defs>
+      <pattern id="tiles" width="120" height="120" patternUnits="userSpaceOnUse">
+        <rect width="120" height="120" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.15"/>
+      </pattern>
+    </defs>
+    <rect width="1200" height="1200" fill="url(#tiles)"/>
+    
+    <!-- Highlighted tiles -->
+    <rect x="240" y="240" width="120" height="120" stroke-width="2" opacity="0.25"/>
+    <rect x="480" y="360" width="120" height="120" stroke-width="2" opacity="0.25"/>
+    <rect x="720" y="480" width="120" height="120" stroke-width="2" opacity="0.25"/>
+    <rect x="360" y="600" width="120" height="120" stroke-width="2" opacity="0.25"/>
+    <rect x="600" y="720" width="120" height="120" stroke-width="2" opacity="0.25"/>
+    
+    <!-- Small corner nodes -->
+    <circle cx="300" cy="300" r="3" fill="currentColor" opacity="0.22"/>
+    <circle cx="540" cy="420" r="3" fill="currentColor" opacity="0.22"/>
+    <circle cx="780" cy="540" r="3" fill="currentColor" opacity="0.22"/>
+    <circle cx="420" cy="660" r="3" fill="currentColor" opacity="0.22"/>
+    <circle cx="660" cy="780" r="3" fill="currentColor" opacity="0.22"/>
+  </g>
+</svg>

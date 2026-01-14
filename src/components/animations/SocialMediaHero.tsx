@@ -1,0 +1,532 @@
+ 'use client'
+
+import React, { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+
+interface FloatingIcon {
+  id: number
+  nodeIndex: number
+  type: 'heart' | 'thumbsUp'
+  offsetX: number
+}
+
+// Node positions (center + 5 surrounding)
+const centerNode = { x: 200, y: 200 }
+const surroundingNodes = [
+  { x: 200, y: 100 },  // Top
+  { x: 295, y: 150 },  // Top right
+  { x: 295, y: 250 },  // Bottom right
+  { x: 105, y: 250 },  // Bottom left
+  { x: 105, y: 150 },  // Top left
+]
+
+const SocialMediaHero = () => {
+  const [floatingIcons, setFloatingIcons] = useState<FloatingIcon[]>([])
+
+  const createIcon = useCallback(() => {
+    const id = Date.now() + Math.random()
+    const nodeIndex = Math.floor(Math.random() * 5)
+    const type: FloatingIcon['type'] = Math.random() > 0.5 ? 'heart' : 'thumbsUp'
+    const offsetX = (Math.random() - 0.5) * 30
+    return { id, nodeIndex, type, offsetX } satisfies FloatingIcon
+  }, [])
+
+  useEffect(() => {
+    // Spawn floating icons periodically
+    const interval = setInterval(() => {
+      setFloatingIcons(prev => {
+        const filtered = prev.slice(-10)
+        return [...filtered, createIcon()]
+      })
+    }, 1200)
+
+    return () => clearInterval(interval)
+  }, [createIcon])
+
+  const handleIconComplete = (id: number) => {
+    setFloatingIcons(prev => prev.filter(icon => icon.id !== id))
+  }
+
+  return (
+    <div className="relative w-full max-w-md select-none flex flex-col items-center">
+      {/* Ambient glow */}
+      <div className="absolute inset-0 blur-3xl opacity-20 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-blue-500 rounded-full" />
+        <div className="absolute top-1/3 right-1/4 w-32 h-32 bg-indigo-600 rounded-full" />
+        <div className="absolute bottom-1/3 left-1/4 w-28 h-28 bg-purple-500 rounded-full" />
+      </div>
+
+      <svg
+        viewBox="0 0 400 420"
+        className="w-full max-h-[60vh] relative z-10"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <defs>
+          {/* Node gradients */}
+          <linearGradient id="sm-centerNode" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#3b82f6" />
+            <stop offset="50%" stopColor="#6366f1" />
+            <stop offset="100%" stopColor="#8b5cf6" />
+          </linearGradient>
+
+          <linearGradient id="sm-outerNode" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#475569" />
+            <stop offset="100%" stopColor="#334155" />
+          </linearGradient>
+
+          <linearGradient id="sm-nodeHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#60a5fa" />
+            <stop offset="100%" stopColor="#818cf8" />
+          </linearGradient>
+
+          {/* Connection line gradient */}
+          <linearGradient id="sm-connectionLine" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="#6366f1" stopOpacity="1" />
+            <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.8" />
+          </linearGradient>
+
+          {/* Heart gradient */}
+          <linearGradient id="sm-heart" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f472b6" />
+            <stop offset="100%" stopColor="#ec4899" />
+          </linearGradient>
+
+          {/* Thumbs up gradient */}
+          <linearGradient id="sm-thumbsUp" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#60a5fa" />
+            <stop offset="100%" stopColor="#3b82f6" />
+          </linearGradient>
+
+          {/* Glow filters */}
+          <filter id="sm-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          <filter id="sm-softGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          <filter id="sm-pulseGlow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* Background circle (decorative) */}
+        <motion.circle
+          cx={centerNode.x}
+          cy={centerNode.y}
+          r={120}
+          fill="none"
+          stroke="#1e293b"
+          strokeWidth="1"
+          strokeDasharray="4 4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5, rotate: 360 }}
+          transition={{ opacity: { duration: 1 }, rotate: { duration: 60, repeat: Infinity, ease: 'linear' } }}
+          style={{ transformOrigin: `${centerNode.x}px ${centerNode.y}px` }}
+        />
+
+        {/* Connection Lines with Pulse Animation */}
+        {surroundingNodes.map((node, index) => (
+          <ConnectionLine
+            key={index}
+            startX={centerNode.x}
+            startY={centerNode.y}
+            endX={node.x}
+            endY={node.y}
+            delay={index * 0.4}
+          />
+        ))}
+
+        {/* Surrounding Nodes */}
+        {surroundingNodes.map((node, index) => (
+          <OuterNode
+            key={index}
+            x={node.x}
+            y={node.y}
+            delay={index * 0.1}
+            index={index}
+          />
+        ))}
+
+        {/* Center Node */}
+        <motion.g
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          {/* Outer glow ring */}
+          <motion.circle
+            cx={centerNode.x}
+            cy={centerNode.y}
+            r={45}
+            fill="none"
+            stroke="url(#sm-centerNode)"
+            strokeWidth="2"
+            opacity="0.3"
+            animate={{
+              r: [45, 55, 45],
+              opacity: [0.3, 0.1, 0.3],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+
+          {/* Main center node */}
+          <circle
+            cx={centerNode.x}
+            cy={centerNode.y}
+            r={35}
+            fill="url(#sm-centerNode)"
+            filter="url(#sm-glow)"
+          />
+
+          {/* Inner highlight */}
+          <circle
+            cx={centerNode.x - 8}
+            cy={centerNode.y - 8}
+            r={12}
+            fill="white"
+            opacity="0.2"
+          />
+
+          {/* Network icon in center */}
+          <g transform={`translate(${centerNode.x - 12}, ${centerNode.y - 12})`}>
+            {/* Simple network icon using circles and lines */}
+            <circle cx="12" cy="6" r="4" fill="white" opacity="0.9" />
+            <circle cx="4" cy="18" r="4" fill="white" opacity="0.9" />
+            <circle cx="20" cy="18" r="4" fill="white" opacity="0.9" />
+            <line x1="12" y1="6" x2="4" y2="18" stroke="white" strokeWidth="1.5" opacity="0.7" />
+            <line x1="12" y1="6" x2="20" y2="18" stroke="white" strokeWidth="1.5" opacity="0.7" />
+            <line x1="4" y1="18" x2="20" y2="18" stroke="white" strokeWidth="1.5" opacity="0.7" />
+          </g>
+        </motion.g>
+
+        {/* Floating Like Icons */}
+        <AnimatePresence>
+          {floatingIcons.map((icon) => (
+            <FloatingLikeIcon
+              key={icon.id}
+              icon={icon}
+              onComplete={() => handleIconComplete(icon.id)}
+            />
+          ))}
+        </AnimatePresence>
+
+        {/* Label */}
+        <motion.g
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+        >
+          <text
+            x="200"
+            y="370"
+            textAnchor="middle"
+            fill="#94a3b8"
+            fontSize="14"
+            fontWeight="500"
+            style={{ fontFamily: 'Outfit, sans-serif' }}
+          >
+            SOCIAL MEDIA NETWORK
+          </text>
+        </motion.g>
+      </svg>
+
+      {/* Stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2 }}
+        className="flex justify-center gap-4 md:gap-6 text-center mt-4"
+      >
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg px-4 py-2 border border-slate-700/50">
+          <div className="text-xl font-bold bg-gradient-to-r from-pink-400 to-rose-400 bg-clip-text text-transparent">
+            24.5K
+          </div>
+          <div className="text-xs text-slate-400 uppercase tracking-wider">Followers</div>
+        </div>
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg px-4 py-2 border border-slate-700/50">
+          <div className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+            8.7%
+          </div>
+          <div className="text-xs text-slate-400 uppercase tracking-wider">Engage</div>
+        </div>
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg px-4 py-2 border border-slate-700/50">
+          <div className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            156
+          </div>
+          <div className="text-xs text-slate-400 uppercase tracking-wider">Posts</div>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+// Connection Line with Pulse Effect
+const ConnectionLine = ({
+  startX,
+  startY,
+  endX,
+  endY,
+  delay,
+}: {
+  startX: number
+  startY: number
+  endX: number
+  endY: number
+  delay: number
+}) => {
+  return (
+    <g>
+      {/* Base line */}
+      <motion.line
+        x1={startX}
+        y1={startY}
+        x2={endX}
+        y2={endY}
+        stroke="#334155"
+        strokeWidth="2"
+        initial={{ pathLength: 0, opacity: 0 }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ duration: 0.8, delay: delay * 0.5 }}
+      />
+
+      {/* Pulsing line overlay */}
+      <motion.line
+        x1={startX}
+        y1={startY}
+        x2={endX}
+        y2={endY}
+        stroke="url(#sm-connectionLine)"
+        strokeWidth="3"
+        strokeLinecap="round"
+        initial={{ pathLength: 0 }}
+        animate={{
+          pathLength: [0, 1, 0],
+          opacity: [0, 1, 0],
+        }}
+        transition={{
+          duration: 2,
+          delay: delay,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+        filter="url(#sm-softGlow)"
+      />
+
+      {/* Traveling dot */}
+      <motion.circle
+        r={4}
+        fill="#60a5fa"
+        filter="url(#sm-pulseGlow)"
+        initial={{ opacity: 0 }}
+        animate={{
+          cx: [startX, endX],
+          cy: [startY, endY],
+          opacity: [0, 1, 1, 0],
+        }}
+        transition={{
+          duration: 1.5,
+          delay: delay + 0.5,
+          repeat: Infinity,
+          repeatDelay: 1.5,
+          ease: 'easeOut',
+          times: [0, 0.1, 0.9, 1],
+        }}
+      />
+    </g>
+  )
+}
+
+// Outer Node Component
+const OuterNode = ({
+  x,
+  y,
+  delay,
+  index,
+}: {
+  x: number
+  y: number
+  delay: number
+  index: number
+}) => {
+  // Different icons for each node
+  const icons = ['user', 'camera', 'chat', 'share', 'bell']
+  const icon = icons[index]
+
+  return (
+    <motion.g
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.5, delay: 0.5 + delay }}
+    >
+      {/* Node glow */}
+      <motion.circle
+        cx={x}
+        cy={y}
+        r={28}
+        fill="none"
+        stroke="url(#sm-nodeHighlight)"
+        strokeWidth="1"
+        opacity="0.3"
+        animate={{
+          r: [28, 32, 28],
+          opacity: [0.3, 0.1, 0.3],
+        }}
+        transition={{
+          duration: 2,
+          delay: index * 0.3,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      />
+
+      {/* Main node */}
+      <circle
+        cx={x}
+        cy={y}
+        r={22}
+        fill="url(#sm-outerNode)"
+        stroke="#475569"
+        strokeWidth="1"
+      />
+
+      {/* Node highlight */}
+      <circle
+        cx={x - 5}
+        cy={y - 5}
+        r={8}
+        fill="white"
+        opacity="0.1"
+      />
+
+      {/* Icon */}
+      <g transform={`translate(${x - 8}, ${y - 8})`}>
+        {icon === 'user' && <UserIcon />}
+        {icon === 'camera' && <CameraIcon />}
+        {icon === 'chat' && <ChatIcon />}
+        {icon === 'share' && <ShareIcon />}
+        {icon === 'bell' && <BellIcon />}
+      </g>
+    </motion.g>
+  )
+}
+
+// Simple icon components using basic shapes
+const UserIcon = () => (
+  <g fill="#94a3b8">
+    <circle cx="8" cy="6" r="4" />
+    <ellipse cx="8" cy="16" rx="6" ry="4" />
+  </g>
+)
+
+const CameraIcon = () => (
+  <g fill="#94a3b8">
+    <rect x="2" y="6" width="12" height="9" rx="2" />
+    <circle cx="8" cy="10" r="3" fill="#334155" />
+    <rect x="5" y="4" width="6" height="3" rx="1" />
+  </g>
+)
+
+const ChatIcon = () => (
+  <g fill="#94a3b8">
+    <rect x="1" y="3" width="14" height="10" rx="2" />
+    <polygon points="4,13 4,17 8,13" />
+  </g>
+)
+
+const ShareIcon = () => (
+  <g fill="#94a3b8">
+    <circle cx="12" cy="4" r="3" />
+    <circle cx="4" cy="8" r="3" />
+    <circle cx="12" cy="12" r="3" />
+    <line x1="6" y1="7" x2="10" y2="5" stroke="#94a3b8" strokeWidth="1.5" />
+    <line x1="6" y1="9" x2="10" y2="11" stroke="#94a3b8" strokeWidth="1.5" />
+  </g>
+)
+
+const BellIcon = () => (
+  <g fill="#94a3b8">
+    <ellipse cx="8" cy="6" rx="5" ry="4" />
+    <rect x="3" y="5" width="10" height="7" rx="1" />
+    <rect x="6" y="12" width="4" height="3" rx="1" />
+    <circle cx="8" cy="2" r="1.5" />
+  </g>
+)
+
+// Floating Like Icon
+const FloatingLikeIcon = ({
+  icon,
+  onComplete,
+}: {
+  icon: FloatingIcon
+  onComplete: () => void
+}) => {
+  const node = surroundingNodes[icon.nodeIndex]
+  const startX = node.x + icon.offsetX
+  const startY = node.y
+
+  return (
+    <motion.g
+      initial={{ x: startX, y: startY, opacity: 0, scale: 0 }}
+      animate={{
+        y: [startY, startY - 80],
+        opacity: [0, 1, 1, 0],
+        scale: [0, 1.2, 1, 0.8],
+      }}
+      transition={{
+        duration: 2.5,
+        ease: 'easeOut',
+        times: [0, 0.2, 0.7, 1],
+      }}
+      onAnimationComplete={onComplete}
+      exit={{ opacity: 0 }}
+    >
+      {icon.type === 'heart' ? (
+        <HeartIcon x={0} y={0} />
+      ) : (
+        <ThumbsUpIcon x={0} y={0} />
+      )}
+    </motion.g>
+  )
+}
+
+// Heart Icon using circles
+const HeartIcon = ({ x, y }: { x: number; y: number }) => (
+  <g transform={`translate(${x - 8}, ${y - 8})`} filter="url(#sm-softGlow)">
+    <circle cx="5" cy="6" r="5" fill="url(#sm-heart)" />
+    <circle cx="11" cy="6" r="5" fill="url(#sm-heart)" />
+    <polygon points="0,7 8,16 16,7" fill="url(#sm-heart)" />
+  </g>
+)
+
+// Thumbs Up Icon using rects and circles
+const ThumbsUpIcon = ({ x, y }: { x: number; y: number }) => (
+  <g transform={`translate(${x - 8}, ${y - 10})`} filter="url(#sm-softGlow)">
+    {/* Thumb */}
+    <ellipse cx="10" cy="6" rx="5" ry="6" fill="url(#sm-thumbsUp)" />
+    {/* Hand */}
+    <rect x="5" y="10" width="10" height="8" rx="2" fill="url(#sm-thumbsUp)" />
+    {/* Wrist */}
+    <rect x="2" y="12" width="4" height="6" rx="1" fill="#2563eb" />
+  </g>
+)
+
+export default SocialMediaHero
