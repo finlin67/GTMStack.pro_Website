@@ -6,10 +6,12 @@ import { usePathname } from 'next/navigation'
 import { HeroAnimation } from '@/components/animations/HeroAnimation'
 import { HeroVisual } from '@/components/ui/HeroVisual.client'
 import { HeroTileAnimation, TileVariant } from '@/components/ui/HeroTileAnimation.client'
-import { ExpertiseHeroConfig } from '@/content/expertiseHeroConfigs'
+import { ExpertiseHeroConfig, HeroTileMode } from '@/content/expertiseHeroConfigs'
 import { getTileVariantForPath } from '@/lib/heroTilePresets'
 
 const DEBUG_TILE = true
+
+type ResolvedMode = 'CONFIG_ENGINE' | 'CUSTOM_ANIMATION' | 'TILE_ANIMATION'
 
 interface ExpertiseHeroVisualProps {
   animation?: React.ReactNode
@@ -24,17 +26,22 @@ export function ExpertiseHeroVisual({ animation, config, borderClassName, tileVa
 
   const resolvedTileVariant = tileVariant || getTileVariantForPath(pathname)
 
-  const getRenderMode = () => {
-    if (config?.useEngine) return 'CONFIG_ENGINE'
-    if (animation) return 'CUSTOM_ANIMATION'
-    return 'TILE_FALLBACK'
+  const configMode = config?.heroTileMode
+  const isExplicit = configMode !== undefined
+
+  const getResolvedMode = (): ResolvedMode => {
+    if (configMode === 'config') return 'CONFIG_ENGINE'
+    if (animation || configMode === 'custom') return 'CUSTOM_ANIMATION'
+    return 'TILE_ANIMATION'
   }
 
+  const resolvedMode = getResolvedMode()
+
   const renderContent = () => {
-    if (config?.useEngine) {
+    if (resolvedMode === 'CONFIG_ENGINE' && config) {
       return <HeroAnimation engine={config.engine} mode="hero" />
     }
-    if (animation) {
+    if (resolvedMode === 'CUSTOM_ANIMATION' && animation) {
       return animation
     }
     return (
@@ -54,11 +61,12 @@ export function ExpertiseHeroVisual({ animation, config, borderClassName, tileVa
         data-reduced-motion={shouldReduceMotion ? 'true' : undefined}
       >
         {DEBUG_TILE && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded z-50 font-mono max-w-[200px]">
+          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded z-50 font-mono max-w-[220px]">
             <div className="font-bold">TILE DEBUG ON</div>
             <div className="truncate">path: {pathname}</div>
             <div>variant: {resolvedTileVariant}</div>
-            <div>mode: {getRenderMode()}</div>
+            <div>mode: {resolvedMode}</div>
+            <div className="text-red-200">{isExplicit ? `explicit: ${configMode}` : 'defaulted'}</div>
           </div>
         )}
         {renderContent()}

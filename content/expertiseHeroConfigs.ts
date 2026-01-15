@@ -1,12 +1,13 @@
 export type ExpertiseHeroEngine = 'scan' | 'flow'
 export type ExpertiseHeroAccent = 'blue' | 'indigo' | 'cyan' | 'emerald'
+export type HeroTileMode = 'tile' | 'config' | 'custom'
 
 export type ExpertiseHeroConfig = {
   engine: ExpertiseHeroEngine
   accent: ExpertiseHeroAccent
   metrics: { label: string; value: string }[]
   tagline: string
-  useEngine?: boolean
+  heroTileMode?: HeroTileMode
 }
 
 export const expertiseHeroConfigs: Record<string, ExpertiseHeroConfig> = {
@@ -19,7 +20,7 @@ export const expertiseHeroConfigs: Record<string, ExpertiseHeroConfig> = {
       { label: 'SEO + content spine', value: 'Structured' },
     ],
     tagline: 'Authoritative content systems tuned for GEO/SEO and campaign lift.',
-    useEngine: true,
+    heroTileMode: 'config',
   },
   'email-marketing': {
     engine: 'scan',
@@ -29,7 +30,7 @@ export const expertiseHeroConfigs: Record<string, ExpertiseHeroConfig> = {
       { label: 'MQL→SQL conversion', value: '180%+' },
     ],
     tagline: 'Lifecycle email that proves contribution and keeps signal tight.',
-    useEngine: true,
+    heroTileMode: 'config',
   },
   'omnichannel-marketing': {
     engine: 'flow',
@@ -68,7 +69,7 @@ export const expertiseHeroConfigs: Record<string, ExpertiseHeroConfig> = {
       { label: 'Spend efficiency', value: 'Tuned' },
     ],
     tagline: 'Signal-led demand plays that scale pipeline with defendable ROI.',
-    useEngine: true,
+    heroTileMode: 'config',
   },
   seo: {
     engine: 'flow',
@@ -115,7 +116,7 @@ export const expertiseHeroConfigs: Record<string, ExpertiseHeroConfig> = {
       { label: 'MQL→SQL', value: '180%' },
     ],
     tagline: 'ABM operating systems with shared ICP, signals, and orchestration.',
-    useEngine: true,
+    heroTileMode: 'config',
   },
   'customer-experience-cx': {
     engine: 'flow',
@@ -161,7 +162,6 @@ export const expertiseHeroConfigs: Record<string, ExpertiseHeroConfig> = {
       { label: 'Cost per acquisition', value: '-25%' },
     ],
     tagline: 'Governed AI and agentic workflows that raise quality and speed.',
-    useEngine: true,
   },
   'marketing-automation': {
     engine: 'flow',
