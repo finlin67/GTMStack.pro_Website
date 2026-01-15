@@ -2,39 +2,51 @@
 
 import React from 'react'
 import { useReducedMotion } from 'framer-motion'
+import { usePathname } from 'next/navigation'
 import { HeroAnimation } from '@/components/animations/HeroAnimation'
 import { HeroVisual } from '@/components/ui/HeroVisual.client'
+import { HeroTileAnimation, TileVariant } from '@/components/ui/HeroTileAnimation.client'
 import { ExpertiseHeroConfig } from '@/content/expertiseHeroConfigs'
+import { getTileVariantForPath } from '@/lib/heroTilePresets'
 
 interface ExpertiseHeroVisualProps {
   animation?: React.ReactNode
   config?: ExpertiseHeroConfig
   borderClassName: string
+  tileVariant?: TileVariant
 }
 
-export function ExpertiseHeroVisual({ animation, config, borderClassName }: ExpertiseHeroVisualProps) {
+export function ExpertiseHeroVisual({ animation, config, borderClassName, tileVariant }: ExpertiseHeroVisualProps) {
   const shouldReduceMotion = useReducedMotion()
+  const pathname = usePathname() || ''
 
-  const renderAnimation = () => {
+  const resolvedTileVariant = tileVariant || getTileVariantForPath(pathname)
+
+  const renderContent = () => {
     if (config) {
       return <HeroAnimation engine={config.engine} mode="hero" />
     }
-    return animation
+    if (animation) {
+      return animation
+    }
+    return (
+      <HeroTileAnimation
+        variant={resolvedTileVariant}
+        seed={pathname}
+        intensity="medium"
+      />
+    )
   }
 
   return (
     <div className="relative hidden lg:block">
       <div className="absolute -left-10 -top-10 w-72 h-72 bg-brand-500/10 rounded-full blur-3xl animate-drift-slow" />
-      {(shouldReduceMotion && config) || animation || config ? (
-        <div
-          className={`mx-auto aspect-square max-w-[500px] bg-white/10 backdrop-blur-lg rounded-2xl p-8 flex items-center justify-center ${borderClassName}`}
-          data-reduced-motion={shouldReduceMotion ? 'true' : undefined}
-        >
-          {renderAnimation()}
-        </div>
-      ) : (
-        <HeroVisual image="/abstract/hero-04.jpg" pathwaySvg="/motifs/pathway.svg" />
-      )}
+      <div
+        className={`relative mx-auto aspect-square max-w-[500px] bg-white/10 backdrop-blur-lg rounded-2xl overflow-hidden ${borderClassName}`}
+        data-reduced-motion={shouldReduceMotion ? 'true' : undefined}
+      >
+        {renderContent()}
+      </div>
     </div>
   )
 }

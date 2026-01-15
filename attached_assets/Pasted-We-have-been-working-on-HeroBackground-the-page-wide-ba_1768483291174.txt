@@ -1,0 +1,61 @@
+We have been working on HeroBackground (the page-wide background). That is NOT my goal.
+
+NEW GOAL (very specific):
+I want content/topic-specific animations INSIDE the right-side hero tile box (the large rounded rectangle to the right of the title) on EVERY expertise/service page.
+
+Do this:
+
+TASK 1 — Create the right-tile animation system
+1) Create a client component: components/ui/HeroTileAnimation.client.tsx
+   - Props: variant: string, seed?: string, intensity?: 'subtle'|'medium'|'bold'
+   - Renders an SVG (viewBox 0 0 600 420) that scales to fill the tile:
+     - wrapper div: className="absolute inset-0"
+     - svg: className="h-full w-full"
+   - Uses Framer Motion for subtle looped motion
+   - Respects prefers-reduced-motion (static SVG)
+   - No raster images.
+
+2) Implement at least 10 tile variants based on my CSV metaphors:
+   - contentFlow (content pieces -> pipeline)
+   - emailBranching (campaign -> personalized paths)
+   - omnichannelNodes (channels pulsing -> unified journey)
+   - socialOrbit (platform icons orbit -> signals)
+   - videoHeatmap (player + heat zones)
+   - funnelStages (multi-entry funnel)
+   - seoUplift (SERP rising + traffic flow)
+   - growthExperiments (curve + test nodes)
+   - paidRoasFlow (budget -> ROAS optimization)
+   - martechSync (stack nodes lighting up)
+   Keep them abstract and brand-consistent (lines/nodes/panels/glows).
+
+TASK 2 — Wire it into the hero tile
+1) Update HeroVisual.tsx (or the component that renders the right tile) so it can render:
+   - image (existing behavior unchanged)
+   - OR tile animation: <HeroTileAnimation variant={tileVariant} seed={pathname} />
+2) Add a rightVisual option like:
+   rightVisual={{ tileVariant: 'emailBranching' }}
+   Do NOT change layout/copy.
+
+TASK 3 — Apply to all expertise/service pages
+1) Create lib/heroTilePresets.ts that maps expertise/service slugs to tileVariant using the CSV categories:
+   - Email Marketing -> emailBranching
+   - Omnichannel -> omnichannelNodes
+   - Social -> socialOrbit
+   - Video -> videoHeatmap
+   - Demand Gen / Paid Ads -> funnelStages or paidRoasFlow
+   - SEO -> seoUplift
+   - Growth Marketing -> growthExperiments
+   - Marketing Ops / MarTech -> martechSync
+   etc.
+2) Update expertise/service page heroes to pass rightVisual with tileVariant from that preset map.
+3) Fallback: if no mapping exists, choose a variant via stable hash of pathname.
+
+DELIVERABLE:
+- The right tile box should never be empty.
+- Every expertise/service page should show a unique-looking tile animation (seeded by pathname).
+- Show diffs for:
+  - HeroTileAnimation.client.tsx
+  - heroTilePresets.ts
+  - HeroVisual.tsx (and any hero wiring file)
+  - any pages you updated
+- Provide a table: route -> tileVariant
