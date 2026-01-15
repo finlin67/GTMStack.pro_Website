@@ -25,13 +25,13 @@ export function ExpertiseHeroVisual({ animation, config, borderClassName, tileVa
   const resolvedTileVariant = tileVariant || getTileVariantForPath(pathname)
 
   const getRenderMode = () => {
-    if (config) return 'CONFIG_ENGINE'
+    if (config?.useEngine) return 'CONFIG_ENGINE'
     if (animation) return 'CUSTOM_ANIMATION'
     return 'TILE_FALLBACK'
   }
 
   const renderContent = () => {
-    if (config) {
+    if (config?.useEngine) {
       return <HeroAnimation engine={config.engine} mode="hero" />
     }
     if (animation) {
