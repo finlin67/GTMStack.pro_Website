@@ -168,7 +168,7 @@ export function HeroDark({
           <div className="text-cyan-300">{resolvedBackgroundVariant}</div>
         </div>
       )}
-      <HeroBackground variant={resolvedBackgroundVariant} intensity={resolvedIntensity} />
+      <HeroBackground variant={resolvedBackgroundVariant} intensity={resolvedIntensity} seed={pathname} />
 
       {/* Ambient gradient orbs with drift */}
       <div className="absolute z-0 top-0 left-1/4 w-[600px] h-[600px] bg-brand-500/20 rounded-full blur-3xl animate-drift-slow pointer-events-none" />

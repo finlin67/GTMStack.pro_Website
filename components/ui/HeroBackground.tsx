@@ -1,8 +1,10 @@
 'use client'
 
 import * as React from 'react'
+import { useMemo } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { createSeededRandom } from '@/lib/seededRandom'
 
 export type HeroBackgroundVariant =
   | 'contentFlow'
@@ -19,6 +21,7 @@ export type HeroBackgroundIntensity = 'subtle' | 'medium' | 'bold'
 interface HeroBackgroundProps {
   variant: HeroBackgroundVariant
   intensity?: HeroBackgroundIntensity
+  seed?: string
   className?: string
 }
 
@@ -43,8 +46,27 @@ const baseTransition = {
   repeatType: 'mirror' as const,
 }
 
-function ContentFlow({ reduced, intensity }: { reduced: boolean; intensity: HeroBackgroundIntensity }) {
+interface VariantProps {
+  reduced: boolean
+  intensity: HeroBackgroundIntensity
+  seed: string
+}
+
+function ContentFlow({ reduced, intensity, seed }: VariantProps) {
   const Path = reduced ? 'path' : motion.path
+
+  const streams = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-contentFlow-streams`)
+    const count = rng.randInt(3, 5)
+    return Array.from({ length: count }).map((_, i) => ({
+      offset: rng.randInt(60, 100) * i,
+      cp1y: rng.randInt(100, 180),
+      cp2y: rng.randInt(280, 360),
+      endY: rng.randInt(220, 300),
+      duration: rng.randFloat(14, 20),
+      delay: rng.randFloat(0, 2),
+    }))
+  }, [seed])
 
   return (
     <svg
@@ -63,12 +85,10 @@ function ContentFlow({ reduced, intensity }: { reduced: boolean; intensity: Hero
       </defs>
 
       <g fill="none" stroke="url(#contentFlowStroke)" strokeWidth={applyStrokeWidth(1.4, intensity)}>
-        {[0, 80, 160, 240].map((offset, i) => (
+        {streams.map((s, i) => (
           <Path
-            key={offset}
-            d={`M-100 ${220 + offset} C 250 ${120 + offset}, 550 ${320 + offset}, 1300 ${
-              260 + offset
-            }`}
+            key={i}
+            d={`M-100 ${220 + s.offset} C 250 ${s.cp1y + s.offset}, 550 ${s.cp2y + s.offset}, 1300 ${s.endY + s.offset}`}
             {...(!reduced && {
               initial: { opacity: applyIntensity(0.1, intensity), pathLength: 0.8 },
               animate: {
@@ -77,8 +97,8 @@ function ContentFlow({ reduced, intensity }: { reduced: boolean; intensity: Hero
               },
               transition: {
                 ...baseTransition,
-                duration: 16 + i * 2,
-                delay: i * 0.8,
+                duration: s.duration,
+                delay: s.delay,
               },
             })}
             opacity={reduced ? applyIntensity(0.14, intensity) : undefined}
@@ -89,8 +109,33 @@ function ContentFlow({ reduced, intensity }: { reduced: boolean; intensity: Hero
   )
 }
 
-function BranchingPaths({ reduced, intensity }: { reduced: boolean; intensity: HeroBackgroundIntensity }) {
+function BranchingPaths({ reduced, intensity, seed }: VariantProps) {
   const Path = reduced ? 'path' : motion.path
+
+  const branches = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-branches`)
+    const count = rng.randInt(2, 4)
+    return Array.from({ length: count }).map((_, i) => ({
+      offset: rng.randInt(30, 50) * i,
+      curvature: rng.randFloat(0.8, 1.2),
+      duration: rng.randFloat(12, 18),
+      delay: rng.randFloat(0, 1.5),
+    }))
+  }, [seed])
+
+  const mainCurve = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-mainCurve`)
+    return {
+      startY: rng.randInt(680, 720),
+      cp1: { x: rng.randInt(330, 370), y: rng.randInt(520, 560) },
+      cp2: { x: rng.randInt(400, 440), y: rng.randInt(460, 500) },
+      mid: { x: rng.randInt(580, 620), y: rng.randInt(400, 440) },
+      cp3: { x: rng.randInt(760, 800), y: rng.randInt(340, 380) },
+      cp4: { x: rng.randInt(840, 880), y: rng.randInt(300, 340) },
+      endY: rng.randInt(200, 240),
+      duration: rng.randFloat(18, 22),
+    }
+  }, [seed])
 
   return (
     <svg
@@ -110,7 +155,7 @@ function BranchingPaths({ reduced, intensity }: { reduced: boolean; intensity: H
 
       <g fill="none" stroke="url(#branchingStroke)" strokeWidth={applyStrokeWidth(1.3, intensity)} strokeLinecap="round">
         <Path
-          d="M200 700 C 350 540, 420 480, 600 420 C 780 360, 860 320, 1000 220"
+          d={`M200 ${mainCurve.startY} C ${mainCurve.cp1.x} ${mainCurve.cp1.y}, ${mainCurve.cp2.x} ${mainCurve.cp2.y}, ${mainCurve.mid.x} ${mainCurve.mid.y} C ${mainCurve.cp3.x} ${mainCurve.cp3.y}, ${mainCurve.cp4.x} ${mainCurve.cp4.y}, 1000 ${mainCurve.endY}`}
           {...(!reduced && {
             initial: { opacity: applyIntensity(0.12, intensity) },
             animate: {
@@ -118,16 +163,16 @@ function BranchingPaths({ reduced, intensity }: { reduced: boolean; intensity: H
             },
             transition: {
               ...baseTransition,
-              duration: 20,
+              duration: mainCurve.duration,
             },
           })}
           opacity={reduced ? applyIntensity(0.16, intensity) : undefined}
         />
 
-        {[0, 40, 80].map((o, i) => (
+        {branches.map((b, i) => (
           <Path
-            key={o}
-            d={`M480 ${520 - o} C 620 ${480 - o}, 730 ${430 - o}, ${950 + i * 10} ${340 - o}`}
+            key={i}
+            d={`M${480 + b.offset * 0.5} ${520 - b.offset} C ${620 + b.offset} ${(480 - b.offset) * b.curvature}, ${730 + b.offset} ${(430 - b.offset) * b.curvature}, ${950 + i * 15} ${340 - b.offset}`}
             {...(!reduced && {
               initial: { opacity: applyIntensity(0.08, intensity), pathLength: 0.6 },
               animate: {
@@ -136,8 +181,8 @@ function BranchingPaths({ reduced, intensity }: { reduced: boolean; intensity: H
               },
               transition: {
                 ...baseTransition,
-                duration: 14 + i * 2,
-                delay: i * 0.9,
+                duration: b.duration,
+                delay: b.delay,
               },
             })}
             opacity={reduced ? applyIntensity(0.12, intensity) : undefined}
@@ -148,10 +193,27 @@ function BranchingPaths({ reduced, intensity }: { reduced: boolean; intensity: H
   )
 }
 
-function OrbitingNodes({ reduced, intensity }: { reduced: boolean; intensity: HeroBackgroundIntensity }) {
+function OrbitingNodes({ reduced, intensity, seed }: VariantProps) {
   const Group = reduced ? 'g' : motion.g
 
-  const radii = [180, 260, 340]
+  const orbits = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-orbits`)
+    const count = rng.randInt(2, 4)
+    return Array.from({ length: count }).map((_, i) => ({
+      radius: rng.randInt(160, 200) + i * rng.randInt(70, 90),
+      nodeCount: rng.randInt(4, 8),
+      angularOffset: rng.randFloat(0, Math.PI * 2),
+      duration: rng.randFloat(14, 22) + i * 3,
+    }))
+  }, [seed])
+
+  const center = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-center`)
+    return {
+      x: rng.randInt(750, 850),
+      y: rng.randInt(340, 380),
+    }
+  }, [seed])
 
   return (
     <svg
@@ -170,17 +232,17 @@ function OrbitingNodes({ reduced, intensity }: { reduced: boolean; intensity: He
       </defs>
 
       <circle
-        cx="800"
-        cy="360"
+        cx={center.x}
+        cy={center.y}
         r="260"
         fill="url(#orbitGlow)"
         opacity={reduced ? applyIntensity(0.18, intensity) : applyIntensity(0.25, intensity)}
       />
 
-      {radii.map((radius, i) => (
-        <g key={radius} transform="translate(800, 360)">
+      {orbits.map((orbit, i) => (
+        <g key={i} transform={`translate(${center.x}, ${center.y})`}>
           <circle
-            r={radius}
+            r={orbit.radius}
             fill="none"
             stroke="#38bdf8"
             strokeOpacity={applyIntensity(0.08 + i * 0.02, intensity)}
@@ -188,18 +250,18 @@ function OrbitingNodes({ reduced, intensity }: { reduced: boolean; intensity: He
           />
           <Group
             {...(!reduced && {
-              initial: { rotate: 0 },
-              animate: { rotate: [0, 360] },
+              initial: { rotate: orbit.angularOffset * (180 / Math.PI) },
+              animate: { rotate: [orbit.angularOffset * (180 / Math.PI), orbit.angularOffset * (180 / Math.PI) + 360] },
               transition: {
                 ...baseTransition,
-                duration: 16 + i * 4,
+                duration: orbit.duration,
               },
             })}
           >
-            {Array.from({ length: 6 }).map((_, j) => {
-              const angle = (j / 6) * Math.PI * 2
-              const x = Math.cos(angle) * radius
-              const y = Math.sin(angle) * radius
+            {Array.from({ length: orbit.nodeCount }).map((_, j) => {
+              const angle = (j / orbit.nodeCount) * Math.PI * 2
+              const x = Math.cos(angle) * orbit.radius
+              const y = Math.sin(angle) * orbit.radius
               return (
                 <circle
                   key={j}
@@ -218,15 +280,20 @@ function OrbitingNodes({ reduced, intensity }: { reduced: boolean; intensity: He
   )
 }
 
-function FunnelStages({ reduced, intensity }: { reduced: boolean; intensity: HeroBackgroundIntensity }) {
+function FunnelStages({ reduced, intensity, seed }: VariantProps) {
   const Rect = reduced ? 'rect' : motion.rect
 
-  const stages = [
-    { width: 760, y: 160, opacity: 0.14 },
-    { width: 620, y: 260, opacity: 0.16 },
-    { width: 480, y: 360, opacity: 0.18 },
-    { width: 340, y: 460, opacity: 0.20 },
-  ]
+  const stages = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-stages`)
+    const count = rng.randInt(3, 5)
+    return Array.from({ length: count }).map((_, i) => ({
+      width: rng.randInt(700, 780) - i * rng.randInt(100, 140),
+      y: 160 + i * rng.randInt(90, 110),
+      opacity: 0.14 + i * 0.02,
+      duration: rng.randFloat(12, 16),
+      delay: rng.randFloat(0, 1) * i,
+    }))
+  }, [seed])
 
   return (
     <svg
@@ -248,7 +315,7 @@ function FunnelStages({ reduced, intensity }: { reduced: boolean; intensity: Her
       <g transform="translate(220, 60)">
         {stages.map((stage, i) => (
           <Rect
-            key={stage.y}
+            key={i}
             x={(760 - stage.width) / 2}
             y={stage.y}
             width={stage.width}
@@ -266,8 +333,8 @@ function FunnelStages({ reduced, intensity }: { reduced: boolean; intensity: Her
               },
               transition: {
                 ...baseTransition,
-                duration: 14 + i * 1.5,
-                delay: i * 0.6,
+                duration: stage.duration,
+                delay: stage.delay,
               },
             })}
             opacity={reduced ? applyIntensity(stage.opacity, intensity) : undefined}
@@ -278,8 +345,32 @@ function FunnelStages({ reduced, intensity }: { reduced: boolean; intensity: Her
   )
 }
 
-function DashboardPulse({ reduced, intensity }: { reduced: boolean; intensity: HeroBackgroundIntensity }) {
+function DashboardPulse({ reduced, intensity, seed }: VariantProps) {
   const Rect = reduced ? 'rect' : motion.rect
+
+  const grid = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-grid`)
+    return {
+      rows: rng.randInt(2, 4),
+      cols: rng.randInt(4, 6),
+      colSpacing: rng.randInt(100, 120),
+      rowSpacing: rng.randInt(80, 100),
+    }
+  }, [seed])
+
+  const curve = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-curve`)
+    const points = Array.from({ length: rng.randInt(5, 8) }).map((_, i) => ({
+      x: 40 + i * rng.randInt(90, 120),
+      y: rng.randInt(200, 340),
+    }))
+    return points.reduce((acc, p, i) => {
+      if (i === 0) return `M${p.x} ${p.y}`
+      const prev = points[i - 1]
+      const cpX = (prev.x + p.x) / 2
+      return `${acc} C ${cpX} ${prev.y}, ${cpX} ${p.y}, ${p.x} ${p.y}`
+    }, '')
+  }, [seed])
 
   return (
     <svg
@@ -310,12 +401,12 @@ function DashboardPulse({ reduced, intensity }: { reduced: boolean; intensity: H
           strokeOpacity={applyIntensity(0.9, intensity)}
         />
 
-        {[0, 1, 2].map((row) => (
-          <g key={row} transform={`translate(40, ${70 + row * 90})`}>
-            {[0, 1, 2, 3, 4].map((col) => (
+        {Array.from({ length: grid.rows }).map((_, row) => (
+          <g key={row} transform={`translate(40, ${70 + row * grid.rowSpacing})`}>
+            {Array.from({ length: grid.cols }).map((_, col) => (
               <Rect
                 key={col}
-                x={col * 110}
+                x={col * grid.colSpacing}
                 y={0}
                 width={60}
                 height={18 + col * 4}
@@ -342,7 +433,7 @@ function DashboardPulse({ reduced, intensity }: { reduced: boolean; intensity: H
         ))}
 
         <path
-          d="M40 320 C 180 300, 260 260, 340 280 C 420 300, 500 260, 560 240 C 640 220, 700 240, 780 230"
+          d={curve}
           fill="none"
           stroke="url(#metricLine)"
           strokeWidth={applyStrokeWidth(2, intensity)}
@@ -355,8 +446,33 @@ function DashboardPulse({ reduced, intensity }: { reduced: boolean; intensity: H
   )
 }
 
-function GrowthCurve({ reduced, intensity }: { reduced: boolean; intensity: HeroBackgroundIntensity }) {
+function GrowthCurve({ reduced, intensity, seed }: VariantProps) {
   const Path = reduced ? 'path' : motion.path
+
+  const curve = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-curve`)
+    const segments = rng.randInt(5, 8)
+    let path = `M0 ${rng.randInt(400, 440)}`
+    for (let i = 0; i < segments; i++) {
+      const x = (i + 1) * (960 / segments)
+      const y = rng.randInt(400 - i * 50, 420 - i * 55)
+      const cpX = x - rng.randInt(40, 80)
+      const cpY = y + rng.randInt(20, 50)
+      path += ` C ${cpX} ${cpY}, ${cpX + rng.randInt(20, 40)} ${y}, ${x} ${y}`
+    }
+    return path
+  }, [seed])
+
+  const ticks = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-ticks`)
+    const count = rng.randInt(5, 8)
+    return Array.from({ length: count }).map((_, i) => ({
+      x: 90 + i * rng.randInt(120, 160),
+      height: rng.randInt(80, 140) + i * rng.randInt(15, 25),
+      duration: rng.randFloat(14, 18),
+      delay: rng.randFloat(0, 0.6) * i,
+    }))
+  }, [seed])
 
   return (
     <svg
@@ -377,7 +493,7 @@ function GrowthCurve({ reduced, intensity }: { reduced: boolean; intensity: Hero
 
       <g transform="translate(160, 140)" fill="none">
         <Path
-          d="M0 420 C 90 380, 160 360, 230 330 C 310 300, 360 260, 430 220 C 510 170, 580 140, 650 120 C 740 95, 830 80, 960 40"
+          d={curve}
           stroke="url(#growthStroke)"
           strokeWidth={applyStrokeWidth(2, intensity)}
           strokeLinecap="round"
@@ -396,10 +512,10 @@ function GrowthCurve({ reduced, intensity }: { reduced: boolean; intensity: Hero
           opacity={reduced ? applyIntensity(0.5, intensity) : undefined}
         />
 
-        {Array.from({ length: 6 }).map((_, i) => (
+        {ticks.map((tick, i) => (
           <Path
             key={i}
-            d={`M${90 + i * 140} 440 L ${90 + i * 140} ${320 - i * 22}`}
+            d={`M${tick.x} 440 L ${tick.x} ${440 - tick.height}`}
             stroke="#22c55e"
             strokeWidth={applyStrokeWidth(1, intensity)}
             strokeOpacity={applyIntensity(0.25, intensity)}
@@ -411,8 +527,8 @@ function GrowthCurve({ reduced, intensity }: { reduced: boolean; intensity: Hero
               },
               transition: {
                 ...baseTransition,
-                duration: 16 + i * 1.2,
-                delay: i * 0.4,
+                duration: tick.duration,
+                delay: tick.delay,
               },
             })}
             opacity={reduced ? applyIntensity(0.16, intensity) : undefined}
@@ -423,28 +539,32 @@ function GrowthCurve({ reduced, intensity }: { reduced: boolean; intensity: Hero
   )
 }
 
-function NetworkSync({ reduced, intensity }: { reduced: boolean; intensity: HeroBackgroundIntensity }) {
+function NetworkSync({ reduced, intensity, seed }: VariantProps) {
   const Circle = reduced ? 'circle' : motion.circle
 
-  const nodes = [
-    { x: 260, y: 220 },
-    { x: 420, y: 190 },
-    { x: 580, y: 260 },
-    { x: 740, y: 220 },
-    { x: 900, y: 280 },
-    { x: 520, y: 380 },
-    { x: 700, y: 420 },
-  ]
+  const nodes = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-nodes`)
+    const count = rng.randInt(5, 9)
+    return Array.from({ length: count }).map((_, i) => ({
+      x: rng.randInt(220, 320) + i * rng.randInt(80, 100),
+      y: rng.randInt(180, 280) + (i % 2) * rng.randInt(80, 160),
+      pulseDelay: rng.randFloat(0, 2),
+      duration: rng.randFloat(12, 18),
+    }))
+  }, [seed])
 
-  const connections: [number, number][] = [
-    [0, 1],
-    [1, 2],
-    [2, 3],
-    [3, 4],
-    [2, 5],
-    [5, 6],
-    [3, 6],
-  ]
+  const connections = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-connections`)
+    const nodeCount = createSeededRandom(`${seed}-nodes`).randInt(5, 9)
+    const links: [number, number][] = []
+    for (let i = 0; i < nodeCount - 1; i++) {
+      links.push([i, i + 1])
+      if (i + 2 < nodeCount && rng.rand() > 0.5) {
+        links.push([i, i + 2])
+      }
+    }
+    return links
+  }, [seed])
 
   return (
     <svg
@@ -470,6 +590,7 @@ function NetworkSync({ reduced, intensity }: { reduced: boolean; intensity: Hero
         {connections.map(([from, to], i) => {
           const a = nodes[from]
           const b = nodes[to]
+          if (!a || !b) return null
           return (
             <motion.line
               key={`${from}-${to}`}
@@ -505,15 +626,14 @@ function NetworkSync({ reduced, intensity }: { reduced: boolean; intensity: Hero
           strokeWidth={applyStrokeWidth(1, intensity)}
           strokeOpacity={applyIntensity(0.5, intensity)}
           {...(!reduced && {
-            initial: { opacity: applyIntensity(0.4, intensity), scale: 0.9 },
+            initial: { opacity: applyIntensity(0.4, intensity) },
             animate: {
               opacity: [applyIntensity(0.28, intensity), applyIntensity(0.9, intensity), applyIntensity(0.5, intensity)],
-              scale: [0.9, 1.08, 1],
             },
             transition: {
               ...baseTransition,
-              duration: 14 + i * 0.8,
-              delay: i * 0.3,
+              duration: node.duration,
+              delay: node.pulseDelay,
             },
           })}
           opacity={reduced ? applyIntensity(0.55, intensity) : undefined}
@@ -523,11 +643,21 @@ function NetworkSync({ reduced, intensity }: { reduced: boolean; intensity: Hero
   )
 }
 
-function NeuralFlow({ reduced, intensity }: { reduced: boolean; intensity: HeroBackgroundIntensity }) {
+function NeuralFlow({ reduced, intensity, seed }: VariantProps) {
   const Path = reduced ? 'path' : motion.path
   const Circle = reduced ? 'circle' : motion.circle
 
-  const layers = [220, 340, 460]
+  const layers = useMemo(() => {
+    const rng = createSeededRandom(`${seed}-layers`)
+    const count = rng.randInt(2, 4)
+    return Array.from({ length: count }).map((_, i) => ({
+      y: rng.randInt(200, 240) + i * rng.randInt(100, 130),
+      nodeCount: rng.randInt(7, 11),
+      nodeSpacing: rng.randInt(80, 100),
+      duration: rng.randFloat(16, 22),
+      delay: rng.randFloat(0, 1) * i,
+    }))
+  }, [seed])
 
   return (
     <svg
@@ -546,10 +676,10 @@ function NeuralFlow({ reduced, intensity }: { reduced: boolean; intensity: HeroB
         </linearGradient>
       </defs>
 
-      {layers.map((y, i) => (
-        <g key={y}>
+      {layers.map((layer, i) => (
+        <g key={i}>
           <Path
-            d={`M160 ${y} H 1040`}
+            d={`M160 ${layer.y} H 1040`}
             stroke="url(#neuralStroke)"
             strokeWidth={applyStrokeWidth(1.4, intensity)}
             strokeLinecap="round"
@@ -560,20 +690,20 @@ function NeuralFlow({ reduced, intensity }: { reduced: boolean; intensity: HeroB
               },
               transition: {
                 ...baseTransition,
-                duration: 18 + i * 2,
-                delay: i * 0.7,
+                duration: layer.duration,
+                delay: layer.delay,
               },
             })}
             opacity={reduced ? applyIntensity(0.16, intensity) : undefined}
           />
 
-          {Array.from({ length: 9 }).map((_, j) => {
-            const x = 190 + j * 90
+          {Array.from({ length: layer.nodeCount }).map((_, j) => {
+            const x = 190 + j * layer.nodeSpacing
             return (
               <Circle
-                key={`${y}-${x}`}
+                key={`${i}-${j}`}
                 cx={x}
-                cy={y}
+                cy={layer.y}
                 r={6}
                 fill="#e5e7eb"
                 fillOpacity={applyIntensity(0.8, intensity)}
@@ -581,10 +711,9 @@ function NeuralFlow({ reduced, intensity }: { reduced: boolean; intensity: HeroB
                 strokeWidth={applyStrokeWidth(1, intensity)}
                 strokeOpacity={applyIntensity(0.7, intensity)}
                 {...(!reduced && {
-                  initial: { opacity: applyIntensity(0.35, intensity), scale: 0.9 },
+                  initial: { opacity: applyIntensity(0.35, intensity) },
                   animate: {
                     opacity: [applyIntensity(0.18, intensity), applyIntensity(0.85, intensity), applyIntensity(0.4, intensity)],
-                    scale: [0.9, 1.1, 1],
                   },
                   transition: {
                     ...baseTransition,
@@ -602,8 +731,10 @@ function NeuralFlow({ reduced, intensity }: { reduced: boolean; intensity: HeroB
   )
 }
 
-export function HeroBackground({ variant, intensity = 'medium', className }: HeroBackgroundProps) {
+export function HeroBackground({ variant, intensity = 'medium', seed = '', className }: HeroBackgroundProps) {
   const prefersReducedMotion = useReducedMotion() ?? false
+  
+  const compositeSeed = `${variant}-${seed}`
 
   return (
     <div
@@ -615,15 +746,14 @@ export function HeroBackground({ variant, intensity = 'medium', className }: Her
       )}
       aria-hidden="true"
     >
-      {variant === 'contentFlow' && <ContentFlow reduced={prefersReducedMotion} intensity={intensity} />}
-      {variant === 'branchingPaths' && <BranchingPaths reduced={prefersReducedMotion} intensity={intensity} />}
-      {variant === 'orbitingNodes' && <OrbitingNodes reduced={prefersReducedMotion} intensity={intensity} />}
-      {variant === 'funnelStages' && <FunnelStages reduced={prefersReducedMotion} intensity={intensity} />}
-      {variant === 'dashboardPulse' && <DashboardPulse reduced={prefersReducedMotion} intensity={intensity} />}
-      {variant === 'growthCurve' && <GrowthCurve reduced={prefersReducedMotion} intensity={intensity} />}
-      {variant === 'networkSync' && <NetworkSync reduced={prefersReducedMotion} intensity={intensity} />}
-      {variant === 'neuralFlow' && <NeuralFlow reduced={prefersReducedMotion} intensity={intensity} />}
+      {variant === 'contentFlow' && <ContentFlow reduced={prefersReducedMotion} intensity={intensity} seed={compositeSeed} />}
+      {variant === 'branchingPaths' && <BranchingPaths reduced={prefersReducedMotion} intensity={intensity} seed={compositeSeed} />}
+      {variant === 'orbitingNodes' && <OrbitingNodes reduced={prefersReducedMotion} intensity={intensity} seed={compositeSeed} />}
+      {variant === 'funnelStages' && <FunnelStages reduced={prefersReducedMotion} intensity={intensity} seed={compositeSeed} />}
+      {variant === 'dashboardPulse' && <DashboardPulse reduced={prefersReducedMotion} intensity={intensity} seed={compositeSeed} />}
+      {variant === 'growthCurve' && <GrowthCurve reduced={prefersReducedMotion} intensity={intensity} seed={compositeSeed} />}
+      {variant === 'networkSync' && <NetworkSync reduced={prefersReducedMotion} intensity={intensity} seed={compositeSeed} />}
+      {variant === 'neuralFlow' && <NeuralFlow reduced={prefersReducedMotion} intensity={intensity} seed={compositeSeed} />}
     </div>
   )
 }
-
