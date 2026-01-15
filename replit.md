@@ -33,3 +33,34 @@ A Next.js 14 marketing website for GTMstack.pro - a B2B technology go-to-market 
 - `tailwind.config.ts` - Tailwind CSS customization
 - `app/layout.tsx` - Root layout with fonts and global styles
 - `app/page.tsx` - Homepage component
+
+## Animation Systems
+
+### Hero Tile Animations
+Topic-specific animated SVG visuals for expertise page hero tiles:
+- **Component**: `components/ui/HeroTileAnimation.client.tsx`
+- **Presets**: `lib/heroTilePresets.ts` - Maps expertise slugs to tile variants
+- **Variants**: contentFlow, emailBranching, omnichannelNodes, socialOrbit, videoHeatmap, funnelStages, seoUplift, growthExperiments, paidRoasFlow, martechSync
+- Uses seeded randomness (`lib/seededRandom.ts`) for deterministic per-route uniqueness
+- Respects `prefers-reduced-motion` - renders static when reduced motion is active
+
+### Hero Background Animations
+Page-wide animated SVG backgrounds:
+- **Component**: `components/ui/HeroBackground.tsx`
+- **Variants**: 8 background patterns (contentFlow, branchingPaths, orbitingNodes, etc.)
+- Uses `lib/heroPresets.ts` for automatic variant selection based on pathname
+- Intensity levels: subtle, medium, bold
+
+### Route → Tile Variant Mapping
+| Category | Tile Variant | Example Slugs |
+|----------|--------------|---------------|
+| Content | contentFlow | content-marketing, content-strategy |
+| Email | emailBranching | email-marketing, lifecycle-marketing |
+| Omnichannel | omnichannelNodes | omnichannel-marketing, customer-experience |
+| Social | socialOrbit | social-media-marketing |
+| Video | videoHeatmap | video-creative, video-marketing |
+| Demand Gen | funnelStages | demand-generation, event-marketing |
+| SEO | seoUplift | seo, search-engine-optimization |
+| Growth | growthExperiments | growth-marketing, product-marketing |
+| Paid Ads | paidRoasFlow | paid-advertising, paid-advertising-sem |
+| MarTech/Ops | martechSync | marketing-operations, revenue-operations |
