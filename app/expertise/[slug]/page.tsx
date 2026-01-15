@@ -1,5 +1,4 @@
 import { Metadata } from 'next'
-import dynamic from 'next/dynamic'
 import React from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -17,30 +16,6 @@ import { PILLARS } from '@/lib/types'
 import { TopoBackdrop, PathwayOverlay, SignalField, StackedPlanes } from '@/components/motifs'
 import { getExpertiseHeroConfig } from '@/content/expertiseHeroConfigs'
 
-const ContentMarketingHero = dynamic(
-  () => import('@/src/components/animations/ContentMarketingHero'),
-  { ssr: false }
-)
-const VideoCreativeHero = dynamic(
-  () => import('@/src/components/animations/VideoCreativeHero'),
-  { ssr: false }
-)
-const DemandGenerationHero = dynamic(
-  () => import('@/src/components/animations/DemandGenerationHero'),
-  { ssr: false }
-)
-const SEOHero = dynamic(
-  () => import('@/src/components/animations/SEOHero'),
-  { ssr: false }
-)
-const SocialMediaHero = dynamic(
-  () => import('@/src/components/animations/SocialMediaHero'),
-  { ssr: false }
-)
-const PaidAdvertisingHero = dynamic(
-  () => import('@/src/components/animations/PaidAdvertisingHero'),
-  { ssr: false }
-)
 
 type IconName = keyof typeof Icons
 
@@ -103,15 +78,6 @@ export default function ExpertiseDetailPage({ params }: Props) {
     notFound()
   }
 
-  const animationMap: Record<string, React.ReactNode> = {
-    'content-marketing': <ContentMarketingHero />,
-    'video-creative': <VideoCreativeHero />,
-    'demand-generation': <DemandGenerationHero />,
-    seo: <SEOHero />,
-    'social-media': <SocialMediaHero />,
-    'paid-advertising': <PaidAdvertisingHero />,
-  }
-  const animation = animationMap[item.slug]
   const heroConfig = getExpertiseHeroConfig(item.slug)
 
   const pillar = item.pillar ? PILLARS.find((p) => p.id === item.pillar) : undefined
@@ -165,7 +131,6 @@ export default function ExpertiseDetailPage({ params }: Props) {
       <ExpertiseHero
         item={item}
         pillar={pillar}
-        animation={animation}
         config={heroConfig}
         icon={IconComponent}
       />

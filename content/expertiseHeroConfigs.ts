@@ -20,7 +20,6 @@ export const expertiseHeroConfigs: Record<string, ExpertiseHeroConfig> = {
       { label: 'SEO + content spine', value: 'Structured' },
     ],
     tagline: 'Authoritative content systems tuned for GEO/SEO and campaign lift.',
-    heroTileMode: 'config',
   },
   'email-marketing': {
     engine: 'scan',
@@ -30,7 +29,6 @@ export const expertiseHeroConfigs: Record<string, ExpertiseHeroConfig> = {
       { label: 'MQL→SQL conversion', value: '180%+' },
     ],
     tagline: 'Lifecycle email that proves contribution and keeps signal tight.',
-    heroTileMode: 'config',
   },
   'omnichannel-marketing': {
     engine: 'flow',
@@ -69,7 +67,6 @@ export const expertiseHeroConfigs: Record<string, ExpertiseHeroConfig> = {
       { label: 'Spend efficiency', value: 'Tuned' },
     ],
     tagline: 'Signal-led demand plays that scale pipeline with defendable ROI.',
-    heroTileMode: 'config',
   },
   seo: {
     engine: 'flow',
@@ -116,7 +113,6 @@ export const expertiseHeroConfigs: Record<string, ExpertiseHeroConfig> = {
       { label: 'MQL→SQL', value: '180%' },
     ],
     tagline: 'ABM operating systems with shared ICP, signals, and orchestration.',
-    heroTileMode: 'config',
   },
   'customer-experience-cx': {
     engine: 'flow',

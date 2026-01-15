@@ -3,15 +3,13 @@
 import React from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
-import { HeroAnimation } from '@/components/animations/HeroAnimation'
-import { HeroVisual } from '@/components/ui/HeroVisual.client'
 import { HeroTileAnimation, TileVariant } from '@/components/ui/HeroTileAnimation.client'
-import { ExpertiseHeroConfig, HeroTileMode } from '@/content/expertiseHeroConfigs'
+import { ExpertiseHeroConfig } from '@/content/expertiseHeroConfigs'
 import { getTileVariantForPath } from '@/lib/heroTilePresets'
 
 const DEBUG_TILE = true
 
-type ResolvedMode = 'CONFIG_ENGINE' | 'CUSTOM_ANIMATION' | 'TILE_ANIMATION'
+type ResolvedMode = 'CUSTOM_ANIMATION' | 'TILE_ANIMATION'
 
 interface ExpertiseHeroVisualProps {
   animation?: React.ReactNode
@@ -26,21 +24,9 @@ export function ExpertiseHeroVisual({ animation, config, borderClassName, tileVa
 
   const resolvedTileVariant = tileVariant || getTileVariantForPath(pathname)
 
-  const configMode = config?.heroTileMode
-  const isExplicit = configMode !== undefined
-
-  const getResolvedMode = (): ResolvedMode => {
-    if (configMode === 'config') return 'CONFIG_ENGINE'
-    if (animation || configMode === 'custom') return 'CUSTOM_ANIMATION'
-    return 'TILE_ANIMATION'
-  }
-
-  const resolvedMode = getResolvedMode()
+  const resolvedMode: ResolvedMode = animation ? 'CUSTOM_ANIMATION' : 'TILE_ANIMATION'
 
   const renderContent = () => {
-    if (resolvedMode === 'CONFIG_ENGINE' && config) {
-      return <HeroAnimation engine={config.engine} mode="hero" />
-    }
     if (resolvedMode === 'CUSTOM_ANIMATION' && animation) {
       return animation
     }
@@ -66,7 +52,6 @@ export function ExpertiseHeroVisual({ animation, config, borderClassName, tileVa
             <div className="truncate">path: {pathname}</div>
             <div>variant: {resolvedTileVariant}</div>
             <div>mode: {resolvedMode}</div>
-            <div className="text-red-200">{isExplicit ? `explicit: ${configMode}` : 'defaulted'}</div>
           </div>
         )}
         {renderContent()}
