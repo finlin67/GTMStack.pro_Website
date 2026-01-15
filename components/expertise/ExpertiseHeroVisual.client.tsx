@@ -9,6 +9,8 @@ import { HeroTileAnimation, TileVariant } from '@/components/ui/HeroTileAnimatio
 import { ExpertiseHeroConfig } from '@/content/expertiseHeroConfigs'
 import { getTileVariantForPath } from '@/lib/heroTilePresets'
 
+const DEBUG_TILE = true
+
 interface ExpertiseHeroVisualProps {
   animation?: React.ReactNode
   config?: ExpertiseHeroConfig
@@ -21,6 +23,12 @@ export function ExpertiseHeroVisual({ animation, config, borderClassName, tileVa
   const pathname = usePathname() || ''
 
   const resolvedTileVariant = tileVariant || getTileVariantForPath(pathname)
+
+  const getRenderMode = () => {
+    if (config) return 'CONFIG_ENGINE'
+    if (animation) return 'CUSTOM_ANIMATION'
+    return 'TILE_FALLBACK'
+  }
 
   const renderContent = () => {
     if (config) {
@@ -45,6 +53,14 @@ export function ExpertiseHeroVisual({ animation, config, borderClassName, tileVa
         className={`relative mx-auto aspect-square max-w-[500px] bg-white/10 backdrop-blur-lg rounded-2xl overflow-hidden ${borderClassName}`}
         data-reduced-motion={shouldReduceMotion ? 'true' : undefined}
       >
+        {DEBUG_TILE && (
+          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded z-50 font-mono max-w-[200px]">
+            <div className="font-bold">TILE DEBUG ON</div>
+            <div className="truncate">path: {pathname}</div>
+            <div>variant: {resolvedTileVariant}</div>
+            <div>mode: {getRenderMode()}</div>
+          </div>
+        )}
         {renderContent()}
       </div>
     </div>
