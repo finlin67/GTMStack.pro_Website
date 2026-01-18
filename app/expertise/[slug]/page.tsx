@@ -3,8 +3,8 @@ import dynamic from 'next/dynamic'
 import React from 'react'
 import { notFound } from 'next/navigation'
 
-const LeadGenBanner = dynamic(
-  () => import('@/src/components/animations/LeadGenBanner'),
+const LeadGenTileAnimation = dynamic(
+  () => import('@/src/components/animations/LeadGenTileAnimation'),
   { ssr: false }
 )
 import Link from 'next/link'
@@ -85,7 +85,7 @@ export default function ExpertiseDetailPage({ params }: Props) {
   }
 
   const heroConfig = getExpertiseHeroConfig(item.slug)
-  const animation = item.slug === 'demand-generation' ? <LeadGenBanner /> : undefined
+  const animation = item.slug === 'demand-generation' ? <LeadGenTileAnimation /> : undefined
 
   const pillar = item.pillar ? PILLARS.find((p) => p.id === item.pillar) : undefined
   const relatedExpertise = item.pillar
