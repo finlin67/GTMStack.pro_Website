@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { HeroTileAnimation, TileVariant } from '@/components/ui/HeroTileAnimation.client'
 import { ExpertiseHeroConfig } from '@/content/expertiseHeroConfigs'
 import { getTileVariantForPath } from '@/lib/heroTilePresets'
+import LeadGenTileAnimation from './animations/LeadGenTileAnimation'
 
 const DEBUG_TILE = true
 
@@ -36,6 +37,17 @@ export function ExpertiseHeroVisual({ animation, config, borderClassName, tileVa
         seed={pathname}
         intensity="medium"
       />
+    )
+  }
+
+  const isDemandGeneration = pathname === '/expertise/demand-generation'
+
+  if (isDemandGeneration) {
+    return (
+      <div className="relative hidden lg:block">
+        <div className="absolute -left-10 -top-10 w-72 h-72 bg-brand-500/10 rounded-full blur-3xl animate-drift-slow" />
+        <LeadGenTileAnimation />
+      </div>
     )
   }
 

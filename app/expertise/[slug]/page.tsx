@@ -1,12 +1,6 @@
 import { Metadata } from 'next'
-import dynamic from 'next/dynamic'
 import React from 'react'
 import { notFound } from 'next/navigation'
-
-const LeadGenTileAnimation = dynamic(
-  () => import('@/src/components/animations/LeadGenTileAnimation'),
-  { ssr: false }
-)
 import Link from 'next/link'
 import * as Icons from 'lucide-react'
 import { ArrowRight, CheckCircle2, Compass, Layers, LineChart, Sparkles } from 'lucide-react'
@@ -85,7 +79,6 @@ export default function ExpertiseDetailPage({ params }: Props) {
   }
 
   const heroConfig = getExpertiseHeroConfig(item.slug)
-  const animation = item.slug === 'demand-generation' ? <LeadGenTileAnimation /> : undefined
 
   const pillar = item.pillar ? PILLARS.find((p) => p.id === item.pillar) : undefined
   const relatedExpertise = item.pillar
@@ -138,7 +131,6 @@ export default function ExpertiseDetailPage({ params }: Props) {
       <ExpertiseHero
         item={item}
         pillar={pillar}
-        animation={animation}
         config={heroConfig}
         icon={IconComponent}
       />
